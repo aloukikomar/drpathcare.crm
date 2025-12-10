@@ -1,0 +1,57 @@
+../drpathcare.crm
+├── public
+└── src
+    ├── api
+    ├── components
+    └── pages
+
+6 directories
+../drpathcare.crm
+├── App.tsx
+├── eslint.config.js
+├── index.html
+├── index.tsx
+├── package-lock.json
+├── package.json
+├── postcss.config.mjs
+├── public
+│   ├── crm.png
+│   ├── favicon_crm.png
+│   ├── login-bg.jpg
+│   ├── logo1.png
+│   └── robots.txt
+├── src
+│   ├── api
+│   │   └── axios.ts
+│   ├── components
+│   │   ├── BookingEditDrawer.tsx
+│   │   ├── CommonDrawer.tsx
+│   │   ├── DataTable.tsx
+│   │   ├── FormDrawer.tsx
+│   │   ├── Header.tsx
+│   │   ├── Sidebar.tsx
+│   │   ├── StatsWidget.tsx
+│   │   ├── TabNavigation.tsx
+│   │   └── UserPopover.tsx
+│   └── pages
+│       ├── Bookings.tsx
+│       ├── ContentManagement.tsx
+│       ├── Customers.tsx
+│       ├── Dashboard.tsx
+│       ├── Enquiry.tsx
+│       ├── Home.tsx
+│       ├── LabProducts.tsx
+│       ├── Login.tsx
+│       ├── NotFound.tsx
+│       ├── Notifications.tsx
+│       └── Settings.tsx
+├── styles.css
+├── tailwind.config.js
+├── tree.txt
+├── tsconfig.app.json
+├── tsconfig.json
+├── tsconfig.node.json
+├── vite-env.d.ts
+└── vite.config.ts
+
+6 directories, 41 files
