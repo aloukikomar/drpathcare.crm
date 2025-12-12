@@ -15,6 +15,7 @@ import ChangesDrawer from "../components/booking-create/ChangesDrawer";
 import { customerApi } from "../api/axios";
 import type { ItemRow } from "./BookingCreate"; // Reuse interface
 import { Home, TestTube2, ClipboardCheck } from "lucide-react";
+import FormDrawer from "../components/FormDrawer";
 
 
 const TABS = [
@@ -63,6 +64,11 @@ const BookingEdit: React.FC = () => {
     // ORIGINAL BOOKING SNAPSHOT
     // ================================
     const [originalBooking, setOriginalBooking] = useState<any>(null);
+
+    // openPatientDrawer
+    
+    const [openPatientDrawer, setOpenPatientDrawer] = useState(false)
+    const [refreshKey, setRefreshKey] = useState(0)
 
     // ================================
     // LOAD BOOKING DETAILS
@@ -277,11 +283,38 @@ const BookingEdit: React.FC = () => {
 
                 {/* PATIENT TESTS DRAWER */}
                 <PatientTestsDrawer
-                    open={drawerTests}
-                    onClose={() => setDrawerTests(false)}
-                    customer={customer}
-                    items={items}
-                    setItems={setItems}
+                                    open={drawerTests}
+                                    onClose={() => setDrawerTests(false)}
+                                    customer={customer}
+                                    items={items}
+                                    setItems={setItems}
+                                    onOpenAddPatient={() => setOpenPatientDrawer(true)}
+                                    refreshKey={refreshKey}
+                                />
+                <FormDrawer
+                    open={openPatientDrawer}
+                    onClose={() => setOpenPatientDrawer(false)}
+                    heading="Add Patients"
+                    apiUrl="/crm/patients/"
+                    method="POST"
+                    initialData={{ user: customer?.id }}
+                    formFields={[
+                        { name: "user", label: "User", type: "text", disabled: true },
+                        { name: "first_name", label: "First Name", type: "text", required: true },
+                        { name: "last_name", label: "Last Name", type: "text" },
+                        {
+                            name: "gender", label: "Gender", type: "select", options: [
+                                { label: "Male", value: "Male" },
+                                { label: "Female", value: "Female" },
+                                { label: "Other", value: "Other" },
+                            ]
+                        },
+                        { name: "age", label: "Age", type: "number", required: true },
+                    ]}
+                    onSuccess={() => {
+                        setOpenPatientDrawer(false);
+                        setRefreshKey(k => k + 1)
+                    }}
                 />
 
                 {/* CHANGES CONFIRM DRAWER */}

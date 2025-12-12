@@ -13,6 +13,7 @@ import { useEffect } from "react";
 import CustomerDetailsSection from "../components/booking-create/CustomerDetailsSection";
 import BookingDetailsSection from "../components/booking-create/BookingDetailsSection";
 import ReviewSection from "../components/booking-create/ReviewSection";
+import FormDrawer from "../components/FormDrawer";
 
 export interface ItemRow {
     id: number;
@@ -53,6 +54,11 @@ const BookingCreate: React.FC = () => {
     // drawers
     const [drawerCustomer, setDrawerCustomer] = useState(false);
     const [drawerTests, setDrawerTests] = useState(false);
+
+    // openPatientDrawer
+
+    const [openPatientDrawer, setOpenPatientDrawer] = useState(false)
+    const [refreshKey, setRefreshKey] = useState(0)
 
     // -------------- parent tab navigation --------------
     const goNext = () => setActiveTab((prev) => prev + 1);
@@ -213,8 +219,35 @@ const BookingCreate: React.FC = () => {
                     customer={customer}
                     items={items}
                     setItems={setItems}
+                    onOpenAddPatient={() => setOpenPatientDrawer(true)}
+                    refreshKey={refreshKey}
                 />
             )}
+            <FormDrawer
+                open={openPatientDrawer}
+                onClose={() => setOpenPatientDrawer(false)}
+                heading="Add Patients"
+                apiUrl="/crm/patients/"
+                method="POST"
+                initialData={{user:customer?.id}}
+                formFields={[
+                    { name: "user", label: "User", type: "text", disabled: true },
+                    { name: "first_name", label: "First Name", type: "text", required: true },
+                    { name: "last_name", label: "Last Name", type: "text" },
+                    {
+                        name: "gender", label: "Gender", type: "select", options: [
+                            { label: "Male", value: "Male" },
+                            { label: "Female", value: "Female" },
+                            { label: "Other", value: "Other" },
+                        ]
+                    },
+                    { name: "age", label: "Age", type: "number", required: true },
+                ]}
+                onSuccess={() => {
+                    setOpenPatientDrawer(false);
+                    setRefreshKey(k=>k+1)
+                }}
+            />
         </div>
     );
 };

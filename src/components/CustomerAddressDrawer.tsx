@@ -35,7 +35,9 @@ export default function CustomerAddressDrawer({
         onSelect={(customer) => {
           setSelectedCustomer(customer);
           onSelectCustomer(customer);
-          setStep("address");
+          //setStep("address");
+          setStep("customer");
+          onClose();
         }}
         renderItem={(c) => (
           <div>

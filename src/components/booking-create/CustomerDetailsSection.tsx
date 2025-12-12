@@ -49,6 +49,7 @@ const CustomerDetailsSection: React.FC<Props> = ({
   }>({ open: false, editing: null });
 
   const [addCustomerDrawer, setAddCustomerDrawer] = useState(false);
+  const [editCustomerDrawer, setEditCustomerDrawer] = useState(false);
 
   // compute age safely
   const age = useMemo(() => {
@@ -100,6 +101,13 @@ const CustomerDetailsSection: React.FC<Props> = ({
     // slight delay to ensure re-mount if it was already open
     setTimeout(() => setAddCustomerDrawer(true), 0);
   };
+  // Helper to open add-customer drawer reliably (re-mount if needed)
+  const openEditCustomer = () => {
+    setEditCustomerDrawer(false);
+    // slight delay to ensure re-mount if it was already open
+    setTimeout(() => setEditCustomerDrawer(true), 0);
+  };
+
 
   // Helper to open address drawer for create (pass customer id) or edit (pass editing)
   const openAddressCreate = () => {
@@ -132,7 +140,7 @@ const CustomerDetailsSection: React.FC<Props> = ({
 
             <button
               type="button"
-              onClick={openAddCustomer}
+              onClick={openEditCustomer}
               className="px-4 py-2 bg-gray-100 text-gray-700 rounded text-sm border"
             >
               + Add Customer
@@ -269,6 +277,33 @@ const CustomerDetailsSection: React.FC<Props> = ({
         onSuccess={(updatedCustomer: any) => {
           onSelectCustomer(updatedCustomer);
           setAddCustomerDrawer(false);
+        }}
+      />
+
+      {/* CUSTOMER FORM DRAWER (create/edit) */}
+      <FormDrawer
+        // key ensures remount when toggled quickly
+        key={editCustomerDrawer ? "customer-form-open" : "customer-form-closed"}
+        open={editCustomerDrawer}
+        onClose={() => setEditCustomerDrawer(false)}
+        method={"POST"}
+        heading={"Add Customer"}
+        apiUrl={"/crm/users/"}
+        formFields={[
+          { name: "first_name", label: "First Name", type: "text", required: true },
+          { name: "last_name", label: "Last Name", type: "text" },
+          { name: "email", label: "Email", type: "text" },
+          { name: "mobile", label: "Mobile", type: "text", required: true },
+          { name: "gender", label: "Gender", type: "select",default: "Male", options: [
+            { label: "Male", value: "Male" },
+            { label: "Female", value: "Female" },
+            { label: "Other", value: "Other" },
+          ] },
+          { name: "age", label: "Age", type: "number" , required: true},
+        ]}
+        onSuccess={(updatedCustomer: any) => {
+          onSelectCustomer(updatedCustomer);
+          setEditCustomerDrawer(false);
         }}
       />
 
