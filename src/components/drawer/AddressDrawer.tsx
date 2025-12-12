@@ -204,7 +204,7 @@ export default function AddressDrawer({
       onClose();
     } catch (err: any) {
       console.log(err);
-      setError(err?.response?.data?.detail || "Failed to save address");
+      setError(err?.serverMessage || "Failed to save address");
     } finally {
       setSaving(false);
     }

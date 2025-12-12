@@ -93,7 +93,7 @@ export default function EnquiryToCustomerDrawer({
 
     } catch (err: any) {
       console.error(err);
-      setError(err?.response?.data?.detail || "Failed to convert enquiry");
+      setError(err?.serverMessage|| "Failed to convert enquiry");
     } finally {
       setSaving(false);
     }

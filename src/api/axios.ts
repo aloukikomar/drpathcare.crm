@@ -5,6 +5,44 @@ const BASE_URL =
   import.meta.env.VITE_API_BASE_URL || "http://localhost:8000/api/";
 
 // -------------------------------------------------------
+// Convert DRF serializer errors → readable string
+// -------------------------------------------------------
+function extractDjangoError(data: any): string {
+  if (!data) return "Unknown error";
+
+  // If DRF returned {"detail": "..."}
+  if (data.detail) return String(data.detail);
+
+  // If DRF returned {"non_field_errors": [...]}
+  if (data.non_field_errors && Array.isArray(data.non_field_errors)) {
+    return data.non_field_errors.join(", ");
+  }
+
+  // Field-level errors:  { field: ["msg1", "msg2"], field2: ["msg"] }
+  if (typeof data === "object") {
+    try {
+      const parts: string[] = [];
+
+      for (const key of Object.keys(data)) {
+        const val = data[key];
+
+        if (Array.isArray(val)) {
+          parts.push(`${key}: ${val.join(", ")}`);
+        } else if (typeof val === "string") {
+          parts.push(`${key}: ${val}`);
+        }
+      }
+
+      if (parts.length > 0) {
+        return parts.join(" | ");
+      }
+    } catch (e) {}
+  }
+
+  return "Validation failed";
+}
+
+// -------------------------------------------------------
 // TYPED AXIOS INSTANCE
 // -------------------------------------------------------
 interface TypedAxios {
@@ -16,74 +54,63 @@ interface TypedAxios {
 }
 
 // -------------------------------------------------------
-// CREATE INSTANCE WITH COMMON LOGIC
-// -------------------------------------------------------
 function createAxiosInstance(): TypedAxios {
   const instance = axios.create({
     baseURL: BASE_URL,
     timeout: 15000,
-    headers: { "Content-Type": "application/json" },
   });
 
-  // ----------------------------
-  // REQUEST INTERCEPTOR — Add token
-  // ----------------------------
-  instance.interceptors.request.use(
-    (config) => {
-      const token = localStorage.getItem("access");
-      if (token) {
-        config.headers = config.headers || {};
-        config.headers.Authorization = `Bearer ${token}`;
-      }
-      return config;
-    },
-    (error) => Promise.reject(error)
-  );
+  // Add token to every request
+  instance.interceptors.request.use((config) => {
+    const token = localStorage.getItem("access");
+    if (token) {
+      config.headers = config.headers || {};
+      config.headers.Authorization = `Bearer ${token}`;
+    }
+    return config;
+  });
 
-  // ----------------------------
-  // RESPONSE INTERCEPTOR — unwrap + handle 401
-  // ----------------------------
+  // RESPONSE HANDLER
   instance.interceptors.response.use(
-    (response: AxiosResponse) => {
-      // ALWAYS unwrap -> return response.data
-      return response.data as any;
-    },
+    (response: AxiosResponse) => response.data,
 
     async (error: AxiosError) => {
       const status = error.response?.status;
+      const data = error.response?.data;
 
-      // 🔥 FULL 401 LOGOUT (from old CRM) — restored
+      // -------------------------
+      // 401 → logout behavior intact
+      // -------------------------
       if (status === 401) {
-        console.warn("401 Unauthorized — clearing session…");
-
         localStorage.removeItem("user");
         localStorage.removeItem("access");
         localStorage.removeItem("refresh");
-
-        window.location.href = "/"; // force redirect
-
-        return Promise.reject(new Error("Unauthorized"));
+        window.location.href = "/";
+        (error as any).serverMessage = "Unauthorized";
+        return Promise.reject(error);
       }
 
-      const serverMessage =
-        (error.response?.data as any)?.detail ||
-        (error.response?.data as any)?.message;
+      // -------------------------
+      // 400 → extract serializer errors EXACTLY as DRF gives
+      // -------------------------
+      if (status === 400) {
+        (error as any).serverMessage = extractDjangoError(data);
+        return Promise.reject(error);
+      }
 
-      const message =
-        serverMessage ||
-        error.response?.statusText ||
+      // Other errors fallback
+      (error as any).serverMessage =
+        extractDjangoError(data) ||
         error.message ||
         "Unknown API error";
 
-      return Promise.reject(new Error(message));
+      return Promise.reject(error);
     }
   );
 
   return instance as unknown as TypedAxios;
 }
 
-// -------------------------------------------------------
-// EXPORT API CLIENTS
-// -------------------------------------------------------
+// Export clients
 export const globalApi = createAxiosInstance();
 export const customerApi = createAxiosInstance();

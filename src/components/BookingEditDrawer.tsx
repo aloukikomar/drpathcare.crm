@@ -106,7 +106,7 @@ export default function BookingEditDrawer({
             onSuccess?.();
             onClose();
         } catch (err: any) {
-            setError(err?.message || "Update failed");
+            setError(err?.serverMessage || "Update failed");
         } finally {
             setLoading(false);
         }

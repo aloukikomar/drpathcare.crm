@@ -280,7 +280,7 @@ export default function FormDrawer({
             onClose();
         } catch (err: any) {
             console.error("FormDrawer submit error:", err);
-            const msg = (err && err.message) || "Failed to submit";
+            const msg = (err && err.serverMessage) || "Failed to submit";
             setGlobalError(msg);
             onError?.(err);
             setLoading(false);

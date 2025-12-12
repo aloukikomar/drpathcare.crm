@@ -139,7 +139,7 @@ export default function DataTable<T = any>({
       } catch (err: any) {
         if (!cancelled) {
           console.error("DataTable fetch error:", err);
-          setError(err?.message || "Failed to load data");
+          setError(err?.serverMessage || "Failed to load data");
           setData([]);
           setCount(0);
         }
