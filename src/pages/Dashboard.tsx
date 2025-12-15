@@ -30,6 +30,13 @@ const Dashboard: React.FC = () => {
       change: '-8% from last week',
       changeType: 'negative' as const
     },
+    {
+      title: 'Bookings Today',
+      value: '47',
+      icon: Calendar,
+      change: '+5% from yesterday',
+      changeType: 'positive' as const
+    },
   ];
 
   return (
@@ -41,8 +48,7 @@ const Dashboard: React.FC = () => {
 
         <main className="flex-1 overflow-y-auto p-4 lg:p-6">
           <div className="mb-6">
-            <h2 className="text-2xl font-bold text-gray-900 mb-2">Welcome back!</h2>
-            <p className="text-gray-600">Here's what's happening with your business today.</p>
+            <h2 className="text-2xl font-bold text-gray-900 mb-2">Dashboard</h2>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">

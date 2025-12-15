@@ -68,14 +68,6 @@ const UserPopover: React.FC<UserPopoverProps> = ({
           </button>
 
           <button
-            onClick={onProfile}
-            className="flex items-center gap-2 px-2 py-2 rounded hover:bg-gray-100 text-sm text-gray-700"
-          >
-            <User className="w-4 h-4" />
-            Profile
-          </button>
-
-          <button
             onClick={onSignOut}
             className="flex items-center gap-2 px-2 py-2 rounded hover:bg-gray-100 text-sm text-red-600"
           >

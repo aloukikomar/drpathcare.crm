@@ -1,6 +1,9 @@
 import React, { useState, useEffect } from "react";
 import { Menu } from "lucide-react";
 import UserPopover from "./UserPopover";
+import { useNavigate } from "react-router-dom";
+
+
 
 interface HeaderProps {
   onMenuToggle: () => void;
@@ -10,6 +13,7 @@ interface HeaderProps {
 const Header: React.FC<HeaderProps> = ({ onMenuToggle, title = "" }) => {
   const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null);
   const [user, setUser] = useState<{ name?: string; email?: string; role?: string } | null>(null);
+  const navigate = useNavigate();
 
   // Load user from localStorage
   useEffect(() => {
@@ -18,7 +22,7 @@ const Header: React.FC<HeaderProps> = ({ onMenuToggle, title = "" }) => {
       if (raw) {
         const parsed = JSON.parse(raw);
         setUser({
-          name: parsed.first_name && parsed.last_name 
+          name: parsed.first_name && parsed.last_name
             ? `${parsed.first_name} ${parsed.last_name}`
             : parsed.first_name || parsed.email || "User",
           email: parsed.email || "",
@@ -44,7 +48,10 @@ const Header: React.FC<HeaderProps> = ({ onMenuToggle, title = "" }) => {
     window.location.href = "/login";
   };
 
-  const handleSettings = () => console.log("Settings clicked");
+  const handleSettings = () => {
+    navigate("/settings");
+  };
+
   const handleProfile = () => console.log("Profile clicked");
 
   return (
