@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { X } from "lucide-react";
 import { customerApi } from "../api/axios";
 import { useNavigate } from "react-router-dom";
@@ -16,9 +16,11 @@ interface BookingEditDrawerProps {
 
 const ACTIONS = [
     { value: "update_status", label: "Update Status" },
+    { value: "update_agent", label: "Update Agent" },
     { value: "update_payment", label: "Update Payment Status" },
-    { value: "update_schedule", label: "Reschedule" },
+    // { value: "update_schedule", label: "Reschedule" },
     { value: "upload_document", label: "Upload Document" },
+    { value: "add_remark", label: "Add Remark" },
 ];
 
 export default function BookingEditDrawer({
@@ -43,9 +45,42 @@ export default function BookingEditDrawer({
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState("");
 
+    const [agentSearch, setAgentSearch] = useState("");
+    const [agentResults, setAgentResults] = useState<any[]>([]);
+    const [selectedAgent, setSelectedAgent] = useState<any>(null);
+    const [searchingAgent, setSearchingAgent] = useState(false);
     const navigate = useNavigate();
 
+    useEffect(() => {
+        if (!agentSearch) {
+            setAgentResults([]);
+            return;
+        }
+
+        const t = setTimeout(async () => {
+            setSearchingAgent(true);
+            try {
+                const res = await customerApi.get("/crm/users/", {
+                    params: {
+                        search: agentSearch,
+                        staff: true, // ✅ only agents/staff
+                    },
+                });
+                setAgentResults(res.results || []);
+            } catch (e) {
+                console.error("Agent search failed", e);
+            } finally {
+                setSearchingAgent(false);
+            }
+        }, 300);
+
+        return () => clearTimeout(t);
+    }, [agentSearch]);
+
+
     if (!open || !bookingId) return null;
+
+
 
     // --------------------------------------------
     // SUBMIT HANDLER
@@ -96,6 +131,15 @@ export default function BookingEditDrawer({
                     payload.scheduled_date = newDate;
                     payload.scheduled_time_slot = newTime;
                 }
+                if (actionType === "update_agent") {
+                    if (!selectedAgent) {
+                        alert("Please select an agent");
+                        return;
+                    }
+                    payload.assigned_users = [selectedAgent.id]
+
+                }
+
                 if (actionType === "update_payment" && paymentMethod !== "cash") {
                     payload.payment_method = paymentMethod;
                 }
@@ -111,6 +155,111 @@ export default function BookingEditDrawer({
             setLoading(false);
         }
     };
+
+    const allowed_fulledit = () => {
+        const user = localStorage.getItem('user')
+
+        if (user) {
+            const parsed = JSON.parse(user);
+            if (parsed?.role?.name == 'Admin') {
+                return true
+            }
+            else if (['open','verified'].includes(String(currentStatus))){
+                return true
+            }
+            else false
+        }
+        return false
+    }
+
+    const getActionOptions = () => {
+        const user = localStorage.getItem('user')
+
+        if (user) {
+            const parsed = JSON.parse(user);
+            if (parsed?.role?.name == 'Admin') {
+                return [
+                    { value: "update_status", label: "Update Status" },
+                    { value: "update_agent", label: "Update Agent" },
+                    { value: "update_payment", label: "Update Payment Status" },
+                    // { value: "update_schedule", label: "Reschedule" },
+                    { value: "upload_document", label: "Upload Document" },
+                    { value: "add_remark", label: "Add Remark" },
+                ];
+            }
+            else if (currentStatus == 'open') return [
+                { value: "update_status", label: "Update Status" },
+                { value: "update_agent", label: "Update Agent" },
+                { value: "add_remark", label: "Add Remark" },
+            ]
+            else if (currentStatus == 'verified') return [
+                { value: "update_status", label: "Update Status" },
+                { value: "update_agent", label: "Update Agent" },
+                { value: "add_remark", label: "Add Remark" },
+            ]
+            else if (currentStatus == 'sample_collected') return [
+                { value: "update_status", label: "Update Status" },
+                { value: "update_agent", label: "Update Agent" },
+                { value: "update_payment", label: "Update Payment Status" },
+                { value: "upload_document", label: "Upload Document" },
+                { value: "add_remark", label: "Add Remark" },
+            ]
+            else if (currentStatus == 'report_uploaded') return [
+                { value: "update_status", label: "Update Status" },
+                { value: "update_agent", label: "Update Agent" },
+                { value: "upload_document", label: "Upload Document" },
+                { value: "add_remark", label: "Add Remark" },
+            ]
+            else if (currentStatus == 'completed') return [
+                { value: "update_agent", label: "Update Agent" },
+                { value: "upload_document", label: "Upload Document" },
+                { value: "add_remark", label: "Add Remark" },
+            ]
+            else if (currentStatus == 'cancelled') return [
+
+                { value: "add_remark", label: "Add Remark" },
+            ]
+        }
+        return []
+    }
+
+    const getStatusOptions = () => {
+        const user = localStorage.getItem('user')
+
+        if (user) {
+            const parsed = JSON.parse(user);
+            if (parsed?.role?.name == 'Admin') {
+                return [
+                    { value: "open", label: "Open" },
+                    { value: "verified", label: "Verified" },
+                    { value: "sample_collected", label: "Sample Collected" },
+                    { value: "report_uploaded", label: "Report Uploaded" },
+                    { value: "completed", label: "Completed" },
+                    { value: "cancelled", label: "Cancelled" },
+                ]
+            }
+            else if (currentStatus == 'open') return [
+                { value: "verified", label: "Verified" },
+                { value: "cancelled", label: "Cancelled" },
+            ]
+            else if (currentStatus == 'verified') return [
+                { value: "open", label: "Open" },
+                { value: "sample_collected", label: "Sample Collected" },
+                { value: "cancelled", label: "Cancelled" },
+            ]
+            else if (currentStatus == 'sample_collected') return [
+                { value: "report_uploaded", label: "Report Uploaded" },
+                { value: "completed", label: "Completed" },
+                { value: "cancelled", label: "Cancelled" },
+            ]
+            else if (currentStatus == 'report_uploaded') return [
+                { value: "completed", label: "Completed" },
+                { value: "cancelled", label: "Cancelled" },
+            ]
+            else return []
+        }
+        return []
+    }
 
     // --------------------------------------------
     // UI
@@ -147,8 +296,9 @@ export default function BookingEditDrawer({
                 {/* Update Full Details Button */}
                 <div className="p-4 border-b">
                     <button
+                        disabled={!allowed_fulledit()}
                         onClick={() => navigate(`/bookings/${bookingId}/edit`)}
-                        className="px-4 py-2 rounded-md bg-[#635bff] text-white text-sm font-medium shadow hover:opacity-90"
+                        className={`px-4 py-2 rounded-md ${allowed_fulledit()?"bg-[#635bff]":"bg-gray-300"} text-white text-sm font-medium shadow hover:opacity-90`}
                     >
                         Update Full Details
                     </button>
@@ -168,7 +318,7 @@ export default function BookingEditDrawer({
                             className="w-full border px-3 py-2 rounded"
                         >
                             <option value="">— Select —</option>
-                            {ACTIONS.map((a) => (
+                            {getActionOptions().map((a) => (
                                 <option key={a.value} value={a.value}>
                                     {a.label}
                                 </option>
@@ -182,21 +332,102 @@ export default function BookingEditDrawer({
 
                     {actionType === "update_status" && (
                         <div className="mb-4">
-                            <label className="block text-sm font-medium mb-1">New Status</label>
+                            <label className="block text-sm font-medium mb-1">
+                                New Status
+                            </label>
+
                             <select
-                                value={status || "open"}
+                                value={status ?? ""}
                                 onChange={(e) => setStatus(e.target.value)}
                                 className="w-full border px-3 py-2 rounded"
                             >
-                                <option value="open">Open</option>
-                                <option value="verified">Verified</option>
-                                <option value="sample_collected">Sample Collected</option>
-                                <option value="report_uploaded">Report Uploaded</option>
-                                <option value="completed">Completed</option>
-                                <option value="cancelled">Cancelled</option>
+                                {/* ✅ BLANK PLACEHOLDER */}
+                                <option value="" disabled>
+                                    Select status
+                                </option>
+
+                                {getStatusOptions().map((opt) => (
+                                    <option key={opt.value} value={opt.value}>
+                                        {opt.label}
+                                    </option>
+                                ))}
                             </select>
                         </div>
                     )}
+
+
+                    {actionType === "update_agent" && (
+                        <div className="mb-4 space-y-3">
+                            <label className="block text-sm font-medium">
+                                Assign Agent
+                            </label>
+
+                            {/* SEARCH INPUT */}
+                            <div className="relative">
+                                <input
+                                    value={agentSearch}
+                                    onChange={(e) => {
+                                        setAgentSearch(e.target.value);
+                                        setSelectedAgent(null);
+                                    }}
+                                    placeholder="Search agent by name or mobile"
+                                    className="w-full border px-3 py-2 rounded"
+                                />
+
+                                {searchingAgent && (
+                                    <div className="absolute right-3 top-2.5 text-xs text-gray-400">
+                                        Searching…
+                                    </div>
+                                )}
+                            </div>
+
+                            {/* SEARCH RESULTS */}
+                            {agentResults.length > 0 && !selectedAgent && (
+                                <div className="border rounded max-h-48 overflow-y-auto">
+                                    {agentResults.map((u) => (
+                                        <div
+                                            key={u.id}
+                                            onClick={() => {
+                                                setSelectedAgent(u);
+                                                setAgentSearch("");
+                                                setAgentResults([]);
+                                            }}
+                                            className="px-3 py-2 cursor-pointer hover:bg-gray-50"
+                                        >
+                                            <div className="font-medium text-sm">
+                                                {u.first_name} {u.last_name}
+                                            </div>
+                                            <div className="text-xs text-gray-500">
+                                                {u.mobile}
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
+
+                            {/* SELECTED AGENT PREVIEW */}
+                            {selectedAgent && (
+                                <div className="flex items-center justify-between bg-gray-50 border rounded px-3 py-2">
+                                    <div>
+                                        <div className="text-sm font-medium">
+                                            {selectedAgent.first_name} {selectedAgent.last_name}
+                                        </div>
+                                        <div className="text-xs text-gray-500">
+                                            {selectedAgent.mobile}
+                                        </div>
+                                    </div>
+
+                                    <button
+                                        onClick={() => setSelectedAgent(null)}
+                                        className="text-xs text-red-600"
+                                    >
+                                        Change
+                                    </button>
+                                </div>
+                            )}
+                        </div>
+                    )}
+
 
                     {actionType === "update_schedule" && (
                         <>

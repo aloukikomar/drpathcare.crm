@@ -46,6 +46,40 @@ const BookingsPage: React.FC = () => {
   const handleOpenFilter = () => setFilterModalOpen(true);
   const handleOpenAdd = () => navigate("/bookings/create");
 
+  const allowed_edit = (status) =>{
+    const user = localStorage.getItem('user')
+
+        if (user) {
+            const parsed = JSON.parse(user);
+            if (parsed?.role?.name == 'Admin') {
+              return true
+            }
+            else if(status=='open'){
+              return true
+            }
+            else if(status=='verified' && ['Team Lead','Manager','Verifier','Root Manager','Phlebo','Super Manager'].includes(parsed?.role?.name)){
+              return true
+            }
+            else if(status=='sample_collected' && ['Verifier','Root Manager','Phlebo','Super Manager'].includes(parsed?.role?.name)){
+              return true
+            }
+            else if(status=='report_uploaded' && ['Verifier','Root Manager','Dietitian','Health Manager','Super Manager'].includes(parsed?.role?.name)){
+              return true
+            }
+            else if(status=='completed' && ['Verifier','Root Manager','Dietitian','Health Manager','Super Manager'].includes(parsed?.role?.name)){
+              return true
+            }
+            else if(status=='cancelled' && ['Verifier','Root Manager','Dietitian','Health Manager','Super Manager'].includes(parsed?.role?.name)){
+              return true
+            }
+            else{
+              return false
+            } 
+        }
+        return false
+
+  }
+
   const handleApplyFilters = (newFilters: Record<string, any>) => {
     setFilters(newFilters);
     setFilterModalOpen(false);
@@ -150,6 +184,13 @@ const BookingsPage: React.FC = () => {
       width: "140px",
     },
     {
+      key: "initial_amount",
+      label: "Initial Amount",
+      sort_allowed: true,
+      render: (row: any) => `₹${Number(row.final_amount ?? 0).toFixed(2)}`,
+      width: "100px",
+    },
+    {
       key: "final_amount",
       label: "Amount",
       sort_allowed: true,
@@ -175,7 +216,10 @@ const BookingsPage: React.FC = () => {
       label: "Actions",
       render: (row: any) => (
         <div className="flex items-center gap-2">
-          <button className="p-1 hover:bg-gray-100 rounded" title="Edit"
+          <button 
+          className={`p-1 rounded-md ${ allowed_edit(row.status) ? "hover:bg-gray-100 cursor-pointer" : "opacity-40 cursor-not-allowed"
+              }`} title="Edit"
+          disabled={!allowed_edit(row.status)}
             onClick={() =>
               setDrawerEdit({ open: true, id: row.id, row })
             }
@@ -242,6 +286,7 @@ const BookingsPage: React.FC = () => {
             showSearch
             showFilter
             showAdd
+            showDateRange
             extraParams={{ ...filters, reloadKey }}
             onFilterClick={handleOpenFilter}
             onAddClick={handleOpenAdd}

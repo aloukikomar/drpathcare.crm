@@ -155,6 +155,7 @@ const Enquiry: React.FC = () => {
             header="Customer Enquiries"
             subheader="Manage and respond to customer inquiries"
             apiUrl="crm/enquiries/"
+            showDateRange
             columns={columns}
             showAdd={false}
             emptyMessage="No enquiries found"

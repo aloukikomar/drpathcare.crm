@@ -66,7 +66,7 @@ const BookingEdit: React.FC = () => {
     const [originalBooking, setOriginalBooking] = useState<any>(null);
 
     // openPatientDrawer
-    
+
     const [openPatientDrawer, setOpenPatientDrawer] = useState(false)
     const [refreshKey, setRefreshKey] = useState(0)
 
@@ -140,16 +140,27 @@ const BookingEdit: React.FC = () => {
         [items]
     );
 
+    // const coreDiscount = baseSum - offerSum;
+    // const totalDiscount = coreDiscount + adminDiscount + couponDiscount;
+    // const finalAmount = Math.max(0, baseSum - totalDiscount);
+
     const coreDiscount = baseSum - offerSum;
-    const totalDiscount = coreDiscount + adminDiscount + couponDiscount;
-    const finalAmount = Math.max(0, baseSum - totalDiscount);
+
+    const totalDiscount = adminDiscount + couponDiscount;
+
+    const finalAmount = Math.max(
+        0,
+        offerSum - adminDiscount - couponDiscount
+    );
 
     // ================================
     // UPDATE BOOKING
     // ================================
     const handleUpdateBooking = async (finalRemark: string) => {
+
         try {
             const payload = {
+                
                 user: customer.id,
                 address: address.id,
                 scheduled_date: scheduledDate,
@@ -173,7 +184,7 @@ const BookingEdit: React.FC = () => {
                     product_id: i.item?.id,
                 })),
             };
-
+            console.log(payload)
             await customerApi.patch(`/bookings/${id}/`, payload);
 
             alert("Booking updated successfully!");
@@ -262,6 +273,7 @@ const BookingEdit: React.FC = () => {
                         {activeTab === 2 && (
                             <ReviewSection
                                 mode="edit"
+                                onAdminDiscountChange={(v) => setAdminDiscount(v)}
                                 customer={customer}
                                 address={address}
                                 items={items}
@@ -283,14 +295,14 @@ const BookingEdit: React.FC = () => {
 
                 {/* PATIENT TESTS DRAWER */}
                 <PatientTestsDrawer
-                                    open={drawerTests}
-                                    onClose={() => setDrawerTests(false)}
-                                    customer={customer}
-                                    items={items}
-                                    setItems={setItems}
-                                    onOpenAddPatient={() => setOpenPatientDrawer(true)}
-                                    refreshKey={refreshKey}
-                                />
+                    open={drawerTests}
+                    onClose={() => setDrawerTests(false)}
+                    customer={customer}
+                    items={items}
+                    setItems={setItems}
+                    onOpenAddPatient={() => setOpenPatientDrawer(true)}
+                    refreshKey={refreshKey}
+                />
                 <FormDrawer
                     open={openPatientDrawer}
                     onClose={() => setOpenPatientDrawer(false)}
@@ -322,7 +334,7 @@ const BookingEdit: React.FC = () => {
                     open={drawerChanges}
                     onClose={() => setDrawerChanges(false)}
                     original={originalBooking}
-                    updated={{
+                    getUpdated={() => ({
                         customer,
                         address,
                         items,
@@ -332,8 +344,10 @@ const BookingEdit: React.FC = () => {
                         couponDiscount,
                         baseSum,
                         offerSum,
+                        coreDiscount,
+                        totalDiscount,
                         finalAmount,
-                    }}
+                    })}
                     onConfirm={handleUpdateBooking}
                 />
             </div>

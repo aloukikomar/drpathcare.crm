@@ -1,6 +1,13 @@
 import React, { useEffect, useMemo, useState } from "react";
-import { Search } from "lucide-react";
+import { Search, Calendar } from "lucide-react";
 import { customerApi } from "../api/axios"; // adjust path to your axios file
+import { DateRangePicker } from "react-date-range";
+import { addDays } from "date-fns";
+
+// required styles for react-date-range (these are GOOD looking, not ugly)
+import "react-date-range/dist/styles.css";
+import "react-date-range/dist/theme/default.css";
+
 
 // ---------- Types ----------
 export type Column<T = any> = {
@@ -24,6 +31,11 @@ type ApiPaginated<T> = {
 type ApiListResponse<T> = ApiPaginated<T> | T[] | { data?: T[]; total?: number | null };
 
 export type DataTableProps<T = any> = {
+  // ✅ NEW
+  showDateRange?: boolean;
+  dateFromParam?: string;
+  dateToParam?: string;
+
   header?: string;
   subheader?: string | null;
   apiUrl: string; // e.g. "bookings/"
@@ -45,6 +57,11 @@ export type DataTableProps<T = any> = {
 
 // ---------- Component ----------
 export default function DataTable<T = any>({
+  // ✅ NEW
+  showDateRange = false,
+  dateFromParam = "date_from",
+  dateToParam = "date_to",
+
   header,
   subheader,
   apiUrl,
@@ -74,6 +91,25 @@ export default function DataTable<T = any>({
   const [count, setCount] = useState<number>(0);
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
+
+  // const [dateFrom, setDateFrom] = useState<string>("");
+  // const [dateTo, setDateTo] = useState<string>("");
+
+  const [showCalendar, setShowCalendar] = useState(false);
+
+  const today = new Date();
+  const isMobile = window.innerWidth < 640;
+
+  const [range, setRange] = useState([
+    {
+      startDate: today,
+      endDate: today,
+      key: "selection",
+    },
+  ]);
+
+  const [tempRange, setTempRange] = useState(range);
+
 
   // debounce search
   useEffect(() => {
@@ -106,6 +142,24 @@ export default function DataTable<T = any>({
       };
 
       if (orderingParam) params.ordering = orderingParam;
+
+      // ✅ NEW: date range
+      if (
+        showDateRange &&
+        range[0]?.startDate &&
+        range[0]?.endDate
+      ) {
+        const formatDate = (date: Date) =>
+          date.getFullYear() +
+          "-" +
+          String(date.getMonth() + 1).padStart(2, "0") +
+          "-" +
+          String(date.getDate()).padStart(2, "0");
+
+        params[dateFromParam] = formatDate(range[0].startDate);
+        params[dateToParam] = formatDate(range[0].endDate);
+      }
+
 
       try {
         // NOTE: customerApi is typed so that .get<T> returns Promise<T> (see your axios setup)
@@ -155,7 +209,7 @@ export default function DataTable<T = any>({
     };
     // Intentional dependencies: when extraParams shape changes, reload.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [normalizedApiUrl, page, pageSize, debouncedSearch, orderingParam, JSON.stringify(extraParams)]);
+  }, [normalizedApiUrl, page, pageSize, debouncedSearch, orderingParam, JSON.stringify(range), JSON.stringify(extraParams)]);
 
   // handle column sort: use column.orderKey if provided else column.key
   const handleSort = (col: Column<T>) => {
@@ -169,6 +223,25 @@ export default function DataTable<T = any>({
     }
     setPage(0);
   };
+
+  const formatRangeLabel = () => {
+    const r = range[0];
+
+    const from = r.startDate.toLocaleDateString("en-IN", {
+      day: "2-digit",
+      month: "short",
+      year: "numeric",
+    });
+
+    const to = r.endDate.toLocaleDateString("en-IN", {
+      day: "2-digit",
+      month: "short",
+      year: "numeric",
+    });
+
+    return from === to ? from : `${from} – ${to}`;
+  };
+
 
   // UI helpers
   const showSearchBox = showSearch;
@@ -203,7 +276,98 @@ export default function DataTable<T = any>({
           )}
 
 
-          <div className="flex w-full sm:w-auto gap-2 items-center">
+          <div className="flex flex-col sm:flex-row w-full sm:w-auto gap-2 items-stretch sm:items-center sm:justify-end">
+
+            {/* ================= DATE RANGE ================= */}
+            <div className="relative w-full sm:w-auto">
+              {showDateRange && (
+                <div>
+                  <button
+                    onClick={() => setShowCalendar((v) => !v)}
+                    className="
+                          w-full sm:w-auto
+                          px-3 py-2
+                          border rounded-md text-sm
+                          flex items-center justify-between
+                          gap-2 bg-white hover:bg-gray-50
+                          min-w-0 sm:min-w-[210px]
+                        "
+                  >
+                    <div className="flex items-center gap-2 text-gray-700 truncate">
+                      <Calendar className="w-4 h-4 text-gray-600 shrink-0" />
+                      <span className="truncate">{formatRangeLabel()}</span>
+                    </div>
+                  </button>
+
+                  {showCalendar && (
+                    <>
+                      {/* 🔹 MOBILE BACKDROP */}
+                      <div
+                        className="fixed inset-0 bg-black/40 z-40 sm:hidden"
+                        onClick={() => setShowCalendar(false)}
+                      />
+
+                      {/* 🔹 CALENDAR */}
+                      <div
+                        className={`
+                          fixed inset-x-2 bottom-2 z-50
+                          sm:absolute sm:right-0 sm:top-full sm:mt-2 sm:inset-x-auto
+                          bg-white shadow-xl border rounded-lg ${!isMobile?"":"[&_.rdrDefinedRangesWrapper]:hidden"}
+                        `}
+                      >
+                        <DateRangePicker
+                          ranges={tempRange}
+                          onChange={(item) => setTempRange([item.selection])}
+                          moveRangeOnFirstSelection={false}
+                          showSelectionPreview
+                          // months={isMobile ? 1 : 2}
+                          // direction={isMobile ? "vertical" : "horizontal"}
+                          rangeColors={["#635bff"]}
+                          showMonthAndYearPickers={!isMobile}
+                        />
+
+
+                        {/* Footer */}
+                        <div className="flex justify-end gap-2 p-3 border-t">
+                          <button
+                            onClick={() => {
+                              const todayRange = [
+                                {
+                                  startDate: today,
+                                  endDate: today,
+                                  key: "selection",
+                                },
+                              ];
+                              setTempRange(todayRange);
+                              setRange(todayRange);
+                              setPage(0);
+                              setShowCalendar(false);
+                            }}
+                            className="text-sm text-gray-600"
+                          >
+                            Clear
+                          </button>
+
+                          <button
+                            onClick={() => {
+                              setRange(tempRange);   // ✅ COMMIT selection
+                              setPage(0);            // ✅ reset pagination
+                              setShowCalendar(false);
+                            }}
+                            className="px-4 py-1.5 text-sm bg-[#635bff] text-white rounded-md"
+                          >
+                            Apply
+                          </button>
+                        </div>
+                      </div>
+                    </>
+                  )}
+                </div>
+              )}
+            </div>
+
+
+            {/* ================= SEARCH ================= */}
             {showSearchBox && (
               <div className="relative w-full sm:w-56">
                 <input
@@ -222,25 +386,26 @@ export default function DataTable<T = any>({
               </div>
             )}
 
+            {/* ================= ACTION BUTTONS ================= */}
             <div className="flex gap-2 w-full sm:w-auto">
               {showFilterBtn && (
                 <button
                   onClick={onFilterClick}
                   className="px-3 py-2 border rounded-md text-sm w-full sm:w-auto"
-                  aria-label="Open filters"
                 >
                   Filter
                 </button>
               )}
+
               {showAddBtn && (
                 <button
                   onClick={onAddClick}
                   className="px-3 py-2 bg-[#635bff] text-white rounded-md text-sm w-full sm:w-auto"
-                  aria-label="Add new"
                 >
                   Add
                 </button>
               )}
+
               {onRefresh && (
                 <button
                   onClick={() => {
@@ -248,13 +413,13 @@ export default function DataTable<T = any>({
                     onRefresh();
                   }}
                   className="px-3 py-2 border rounded-md text-sm hidden sm:inline-block"
-                  aria-label="Refresh"
                 >
                   Refresh
                 </button>
               )}
             </div>
           </div>
+
         </div>
       </div>
 

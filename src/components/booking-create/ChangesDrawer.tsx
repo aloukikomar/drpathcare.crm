@@ -6,7 +6,7 @@ interface Props {
   open: boolean;
   onClose: () => void;
   original: any;
-  updated: any;
+  getUpdated: any;
   onConfirm: (remark: string) => void;
 }
 
@@ -68,7 +68,7 @@ const ChangesDrawer: React.FC<Props> = ({
   open,
   onClose,
   original,
-  updated,
+  getUpdated,
   onConfirm,
 }) => {
   const [remark, setRemark] = useState("");
@@ -76,6 +76,7 @@ const ChangesDrawer: React.FC<Props> = ({
   if (!open) return null;
 
   // Original normalized values
+  const updated = getUpdated();
   const originalAddress = original.address_detail;
   const updatedAddress = updated.address;
 

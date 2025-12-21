@@ -110,6 +110,7 @@ const Notifications: React.FC = () => {
             showSearch
             showFilter
             showAdd
+            showDateRange
             extraParams={filters}
             columns={columns}
             emptyMessage="No notifications found"

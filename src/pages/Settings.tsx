@@ -24,6 +24,7 @@ export default function Settings() {
   const [saving, setSaving] = useState(false);
   const [roles, setRoles] = useState<any[]>([]);
   const [loadingRoles, setLoadingRoles] = useState(false);
+  const [mode, setMode] = useState<"edit" | "create">("edit");
 
   // ======================================================
   // LOAD CURRENT USER
@@ -85,16 +86,27 @@ export default function Settings() {
 
   const handleSave = async () => {
     if (!selectedUser) return;
+
     setSaving(true);
     try {
-      await customerApi.patch(`/crm/users/${selectedUser.id}/`, selectedUser);
-      alert("Profile updated");
-    } catch {
-      alert("Failed to update");
+      if (mode === "create") {
+        const res = await customerApi.post("/crm/users/", selectedUser);
+
+        alert("User created successfully");
+        setSelectedUser(res);
+        setMode("edit"); // switch to edit after create
+      } else {
+        await customerApi.patch(`/crm/users/${selectedUser.id}/`, selectedUser);
+        alert("Profile updated");
+      }
+    } catch (err) {
+      console.error(err);
+      alert("Failed to save user");
     } finally {
       setSaving(false);
     }
   };
+
 
   return (
     <div className="flex h-screen bg-gray-50">
@@ -111,18 +123,45 @@ export default function Settings() {
           {/* ===================== USER SELECT ===================== */}
           {isAdmin && (
             <div className="bg-white rounded-xl border shadow-sm p-4 mb-6">
-              <h3 className="font-semibold mb-3 flex items-center gap-2">
-                <Search className="w-5 h-5" /> Select User
-              </h3>
 
+              {/* HEADER ROW */}
+              <div className="flex items-center justify-between mb-4 gap-3">
+                <h3 className="font-semibold flex items-center gap-2">
+                  <Search className="w-5 h-5" />
+                  Select User
+                </h3>
+
+                <button
+                  onClick={() => {
+                    setMode("create");
+                    setSelectedUser({
+                      first_name: "",
+                      last_name: "",
+                      mobile: "",
+                      email: "",
+                      gender: "Male",
+                      age: null,
+                      role: "",
+                    });
+                  }}
+                  className="flex items-center gap-2 text-sm bg-primary text-white px-3 py-2 rounded-lg whitespace-nowrap"
+                >
+                  <Users className="w-4 h-4" />
+                  Add User
+                </button>
+              </div>
+
+              {/* SEARCH INPUT */}
               <div className="relative">
+                <Search className="absolute left-3 top-2.5 w-5 h-5 text-gray-400" />
+
                 <input
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
                   placeholder="Search by name or mobile"
                   className="w-full border rounded-lg pl-10 pr-10 py-2"
                 />
-                <Search className="absolute left-3 top-2.5 w-5 h-5 text-gray-400" />
+
                 {search && (
                   <button
                     onClick={() => {
@@ -135,6 +174,7 @@ export default function Settings() {
                   </button>
                 )}
 
+                {/* DROPDOWN */}
                 {searchResults.length > 0 && (
                   <div className="absolute mt-2 w-full bg-white border rounded-xl shadow-lg max-h-60 overflow-y-auto z-50">
                     {searchResults.map((u) => (
@@ -142,6 +182,7 @@ export default function Settings() {
                         key={u.id}
                         onClick={() => {
                           setSelectedUser(u);
+                          setMode("edit");
                           setSearch("");
                           setSearchResults([]);
                         }}
@@ -162,12 +203,15 @@ export default function Settings() {
             </div>
           )}
 
+
           {/* ===================== PROFILE ===================== */}
           {selectedUser && (
             <div className="bg-white rounded-xl border shadow-sm p-4">
               <h3 className="font-semibold mb-4 flex items-center gap-2">
-                <User className="w-5 h-5" /> Profile Details
+                <User className="w-5 h-5" />
+                {mode === "create" ? "Add New User" : "Profile Details"}
               </h3>
+
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <Input
@@ -199,7 +243,10 @@ export default function Settings() {
                   label="Mobile"
                   icon={<Phone className="w-4 h-4" />}
                   value={selectedUser.mobile}
-                  disabled
+                  onChange={(v) =>
+                    setSelectedUser({ ...selectedUser, mobile: v })
+                  }
+                  disabled={currentUser.role.name == 'Admin' ? true : false}
                 />
 
                 <div>

@@ -181,6 +181,7 @@ const BookingCreate: React.FC = () => {
                     {activeTab === 2 && (
                         <ReviewSection
                             mode="create"
+                            onAdminDiscountChange={(v)=>setAdminDiscount(v)}
                             customer={customer}
                             address={address}
                             items={items}

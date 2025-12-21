@@ -22,12 +22,17 @@ const Header: React.FC<HeaderProps> = ({ onMenuToggle, title = "" }) => {
       if (raw) {
         const parsed = JSON.parse(raw);
         setUser({
-          name: parsed.first_name && parsed.last_name
-            ? `${parsed.first_name} ${parsed.last_name}`
-            : parsed.first_name || parsed.email || "User",
+          name:
+            parsed.first_name && parsed.last_name
+              ? `${parsed.first_name} ${parsed.last_name}`
+              : parsed.first_name || parsed.email || "User",
           email: parsed.email || "",
-          role: parsed.role || "User",
+          role:
+            typeof parsed.role === "object"
+              ? parsed.role.name
+              : parsed.role || "User",
         });
+
       }
     } catch (e) {
       console.error("Failed to parse user from localStorage", e);

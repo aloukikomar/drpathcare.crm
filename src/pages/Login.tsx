@@ -70,6 +70,7 @@ export default function LoginPage() {
       localStorage.setItem("access", data.access);
       localStorage.setItem("refresh", data.refresh);
       localStorage.setItem("user", JSON.stringify(data.user));
+      console.log(JSON.stringify(data.user))
 
       navigate("/dashboard");
     } catch (err: any) {

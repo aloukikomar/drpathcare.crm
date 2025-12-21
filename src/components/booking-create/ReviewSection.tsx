@@ -1,262 +1,316 @@
-import React from "react";
-import { CheckCircle, Mail, Phone, User, HomeIcon, CalendarIcon } from "lucide-react";
+import React, { useMemo, useState } from "react";
+import {
+  CheckCircle,
+  Mail,
+  Phone,
+  User,
+  HomeIcon,
+  CalendarIcon,
+} from "lucide-react";
 import type { ItemRow } from "../../pages/BookingCreate";
 
 interface Props {
-    mode:"create"|"edit"
-    customer: any;
-    address: any;
-    items: ItemRow[];
-    scheduledDate: string;
-    scheduledSlot: string;
+  mode: "create" | "edit";
+  customer: any;
+  address: any;
+  items: ItemRow[];
+  scheduledDate: string;
+  scheduledSlot: string;
 
-    baseSum: number;
-    offerSum: number;
-    coreDiscount: number;
-    adminDiscount: number;
-    couponDiscount: number;
-    totalDiscount: number;
-    finalAmount: number;
+  baseSum: number;
+  offerSum: number;
+  coreDiscount: number;
+  adminDiscount: number;
+  couponDiscount: number;
+  totalDiscount: number;
+  finalAmount: number;
 
-    onBack: () => void;
-    onSubmit: () => void;
+  onAdminDiscountChange: (value: number) => void;
+
+  onBack: () => void;
+  onSubmit: () => void;
 }
 
 const ReviewSection: React.FC<Props> = ({
-    customer,
-    address,
-    items,
-    scheduledDate,
-    scheduledSlot,
-    mode,
-    baseSum,
-    offerSum,
-    coreDiscount,
-    adminDiscount,
-    couponDiscount,
-    totalDiscount,
-    finalAmount,
+  mode,
+  customer,
+  address,
+  items,
+  scheduledDate,
+  scheduledSlot,
 
-    onBack,
-    onSubmit,
+  baseSum,
+  offerSum,
+  coreDiscount,
+  adminDiscount,
+  couponDiscount,
+  totalDiscount,
+  finalAmount,
+
+  onAdminDiscountChange,
+  onBack,
+  onSubmit,
 }) => {
-    return (
-        <section className="bg-white p-4 lg:p-6 border rounded-lg shadow-sm space-y-6">
+  // ----------------------------------
+  // USER + PERMISSION LOGIC
+  // ----------------------------------
+  const rawUser = localStorage.getItem("user");
+  const currentUser = rawUser ? JSON.parse(rawUser) : null;
 
-            {/* ----------------- HEADER ----------------- */}
-            <div className="flex justify-between items-center">
-                <h2 className="text-lg font-semibold">Review & Confirm</h2>
-            </div>
+  const maxAmount = Number(currentUser?.role?.max_amount || 0);
+  const maxPercentage = Number(currentUser?.role?.max_percentage || 0);
 
-            {/* CUSTOMER PANEL */}
-            <div className="border rounded-lg p-4 bg-gray-50 space-y-1">
-                <h3 className="font-semibold text-sm text-gray-700 flex items-center gap-2">
-                    <CheckCircle className="w-4 h-4 text-green-600" />
-                    Customer
-                </h3>
-                <div className="bg-white border rounded-lg p-4 flex items-start gap-3 shadow-sm">
+  const maxByPercentage = useMemo(
+    () => (offerSum * maxPercentage) / 100,
+    [offerSum, maxPercentage]
+  );
 
-                    <div className="flex flex-col sm:flex-row sm:items-center gap-3 text-sm">
+  const maxAdminDiscount = Math.min(maxAmount, maxByPercentage);
 
-                        <div className="flex items-center gap-2">
-                            <div className="flex items-center justify-center w-10 h-10 rounded-full bg-gray-100 text-gray-600">
-                                <User className="w-5 h-5 text-gray-600" />
-                            </div>
-                            <span className="font-bold">
-                                {customer?.first_name} {customer?.last_name}
-                            </span>
-                        </div>
-                    {customer ? (
-                        <div className="flex flex-col sm:flex-row sm:items-center gap-3 text-sm">
-                        <div className="flex items-center gap-2">
-                            <Phone className="w-5 h-5 text-gray-600" />
-                            <span>{customer?.mobile}</span>
-                        </div>
+  const [adminInput, setAdminInput] = useState<number>(adminDiscount || 0);
 
-                        {customer?.email && (
-                            <div className="flex items-center gap-2">
-                                <Mail className="w-5 h-5 text-gray-600" />
-                                <span>{customer?.email}</span>
-                            </div>
-                        )}
+  const adminDisabled =
+    adminInput <= 0 || adminInput > maxAdminDiscount;
 
-                        {customer?.age !== null && (
-                            <span className="text-gray-700">Age: {customer?.age}</span>
-                        )}
+  // ----------------------------------
+  // RENDER
+  // ----------------------------------
+  return (
+    <section className="bg-white p-4 lg:p-6 border rounded-lg shadow-sm space-y-6">
 
-                        {customer?.gender && (
-                            <span className="text-gray-700">Gender: {customer?.gender}</span>
-                        )}
-                    </div>) : (
-                        <p className="text-sm text-gray-400">No customer selected</p>
-                    )}
-                    </div>
-                </div>
-            </div>
+      {/* HEADER */}
+      <div className="flex justify-between items-center">
+        <h2 className="text-lg font-semibold">Review & Confirm</h2>
+      </div>
 
+      {/* CUSTOMER */}
+      <div className="border rounded-lg p-4 bg-gray-50 space-y-1">
+        <h3 className="font-semibold text-sm text-gray-700 flex items-center gap-2">
+          <CheckCircle className="w-4 h-4 text-green-600" />
+          Customer
+        </h3>
 
-            {/* ADDRESS PANEL */}
-            <div className="border rounded-lg p-4 bg-gray-50 space-y-1">
-                <h3 className="font-semibold text-sm text-gray-700 flex items-center gap-2">
-                    <CheckCircle className="w-4 h-4 text-green-600" />
-                    Address
-                </h3>
-                <div className="bg-white border rounded-lg p-4 flex items-start gap-3 shadow-sm">
+        <div className="bg-white border rounded-lg p-4 flex items-start gap-3 shadow-sm">
+          <div className="flex items-center justify-center w-10 h-10 rounded-full bg-gray-100">
+            <User className="w-5 h-5 text-gray-600" />
+          </div>
 
-                    {/* Icon */}
-                    <div className="flex items-center justify-center w-10 h-10 rounded-full bg-gray-100 text-gray-600">
-                        <HomeIcon className="w-5 h-5 text-gray-600" />
-                    </div>
+          {customer ? (
+            <div className="text-sm space-y-1">
+              <p className="font-semibold">
+                {customer.first_name} {customer.last_name}
+              </p>
 
-                    {/* Details */}
-                    {address ? (<div className="flex-1 text-sm">
-                        <span className="font-semibold text-gray-800">{address?.line1}</span>
+              <div className="flex flex-wrap gap-3 text-gray-600">
+                <span className="flex items-center gap-1">
+                  <Phone className="w-4 h-4" />
+                  {customer.mobile}
+                </span>
 
-                        {address?.line2 && (
-                            <span className="text-gray-600">, {address.line2}</span>
-                        )}
-
-                        <div className="text-gray-600">
-                            {address?.city}, {address?.state} – {address?.pincode}
-                        </div>
-                    </div>) : (
-                        <p className="text-sm text-gray-400">No address selected</p>
-                    )}
-                </div>
-            </div>
-
-            {/* ----------------- SCHEDULE ----------------- */}
-            <div className="border rounded-lg p-4 bg-gray-50 space-y-1">
-                <h3 className="font-semibold text-sm text-gray-700 flex items-center gap-2">
-                    <CheckCircle className="w-4 h-4 text-green-600" />
-                    Schedule
-                </h3>
-                <div className="bg-white border rounded-lg p-4 flex items-start gap-3 shadow-sm">
-
-                    {/* Icon */}
-                    <div className="flex items-center justify-center w-10 h-10 rounded-full bg-gray-100 text-gray-600">
-                        <CalendarIcon className="w-5 h-5 text-gray-600" />
-                    </div>
-
-                    {/* Details */}
-                    {scheduledDate ? (<div className="flex-1 text-sm">
-                        <div className="font-semibold text-gray-800">{scheduledDate}</div>
-
-                        <div className="text-gray-600">
-                            {scheduledSlot}
-                        </div>
-                    </div>) : (
-                        <p className="text-sm text-gray-400">No schedule selected</p>
-                    )}
-                </div>
-            </div>
-
-            {/* ----------------- ITEMS ----------------- */}
-            <div className="border rounded-lg p-4 bg-gray-50 space-y-3">
-                <h3 className="font-semibold text-sm text-gray-700 flex items-center gap-2">
-                    <CheckCircle className="w-4 h-4 text-green-600" />
-                    Tests & Patients ({items.length})
-                </h3>
-
-                {items.length === 0 ? (
-                    <p className="text-sm text-gray-400">No items added</p>
-                ) : (
-                    <div className="space-y-2">
-                        {items.map((it, idx) => (
-                            <div
-                                key={it.id}
-                                className="p-3 border rounded bg-white text-sm flex justify-between items-start"
-                            >
-                                <div>
-                                    <p className="font-medium">
-                                        {it.item?.name || "Test"}
-                                    </p>
-                                    <p className="text-gray-600">
-                                        Patient:{" "}
-                                        <span className="font-medium">
-                                            {it.patient?.first_name} {it.patient?.last_name}
-                                        </span>
-                                    </p>
-                                    <p className="text-gray-500 text-xs capitalize">
-                                        {it.itemType.replace("_", " ")}
-                                    </p>
-                                </div>
-
-                                <div className="text-right">
-                                    <p className="font-semibold text-gray-900">₹{it.offer_price}</p>
-                                    {it.offer_price !== it.price && (
-                                        <p className="line-through text-xs text-gray-500">₹{it.price}</p>
-                                    )}
-                                </div>
-                            </div>
-                        ))}
-                    </div>
-                )}
-            </div>
-
-
-            {/* ----------------- PRICING ----------------- */}
-            <div className="border rounded-lg p-4 bg-gray-50 text-sm space-y-1">
-                <h3 className="font-semibold text-sm text-gray-700 mb-2">Pricing Summary</h3>
-
-                <div className="flex justify-between">
-                    <span>Base Total</span>
-                    <span>₹{baseSum}</span>
-                </div>
-
-                <div className="flex justify-between">
-                    <span>Offer Total</span>
-                    <span>₹{offerSum}</span>
-                </div>
-
-                <div className="flex justify-between text-green-600">
-                    <span>Core Discount</span>
-                    <span>-₹{coreDiscount}</span>
-                </div>
-
-                {couponDiscount > 0 && (
-                    <div className="flex justify-between text-green-600">
-                        <span>Coupon Discount</span>
-                        <span>-₹{couponDiscount}</span>
-                    </div>
+                {customer.email && (
+                  <span className="flex items-center gap-1">
+                    <Mail className="w-4 h-4" />
+                    {customer.email}
+                  </span>
                 )}
 
-                {adminDiscount > 0 && (
-                    <div className="flex justify-between text-green-600">
-                        <span>Admin Discount</span>
-                        <span>-₹{adminDiscount}</span>
-                    </div>
+                {customer.age !== null && (
+                  <span>Age: {customer.age}</span>
                 )}
 
-                <div className="flex justify-between font-medium mt-2">
-                    <span>Total Discount</span>
-                    <span>-₹{totalDiscount}</span>
-                </div>
+                {customer.gender && (
+                  <span>Gender: {customer.gender}</span>
+                )}
+              </div>
+            </div>
+          ) : (
+            <p className="text-sm text-gray-400">No customer selected</p>
+          )}
+        </div>
+      </div>
 
-                <div className="flex justify-between font-semibold text-lg mt-1">
-                    <span>Final Amount</span>
-                    <span>₹{finalAmount}</span>
-                </div>
+      {/* ADDRESS */}
+      <div className="border rounded-lg p-4 bg-gray-50 space-y-1">
+        <h3 className="font-semibold text-sm text-gray-700 flex items-center gap-2">
+          <CheckCircle className="w-4 h-4 text-green-600" />
+          Address
+        </h3>
+
+        <div className="bg-white border rounded-lg p-4 flex items-start gap-3 shadow-sm">
+          <div className="flex items-center justify-center w-10 h-10 rounded-full bg-gray-100">
+            <HomeIcon className="w-5 h-5 text-gray-600" />
+          </div>
+
+          {address ? (
+            <div className="text-sm">
+              <p className="font-semibold">{address.line1}</p>
+              {address.line2 && <p>{address.line2}</p>}
+              <p className="text-gray-600">
+                {address.city}, {address.state} – {address.pincode}
+              </p>
+            </div>
+          ) : (
+            <p className="text-sm text-gray-400">No address selected</p>
+          )}
+        </div>
+      </div>
+
+      {/* SCHEDULE */}
+      <div className="border rounded-lg p-4 bg-gray-50 space-y-1">
+        <h3 className="font-semibold text-sm text-gray-700 flex items-center gap-2">
+          <CheckCircle className="w-4 h-4 text-green-600" />
+          Schedule
+        </h3>
+
+        <div className="bg-white border rounded-lg p-4 flex items-start gap-3 shadow-sm">
+          <div className="flex items-center justify-center w-10 h-10 rounded-full bg-gray-100">
+            <CalendarIcon className="w-5 h-5 text-gray-600" />
+          </div>
+
+          {scheduledDate ? (
+            <div className="text-sm">
+              <p className="font-semibold">{scheduledDate}</p>
+              <p className="text-gray-600">{scheduledSlot}</p>
+            </div>
+          ) : (
+            <p className="text-sm text-gray-400">No schedule selected</p>
+          )}
+        </div>
+      </div>
+
+      {/* TESTS */}
+      <div className="border rounded-lg p-4 bg-gray-50 space-y-3">
+        <h3 className="font-semibold text-sm text-gray-700 flex items-center gap-2">
+          <CheckCircle className="w-4 h-4 text-green-600" />
+          Tests & Patients ({items.length})
+        </h3>
+
+        {items.map((it) => (
+          <div
+            key={it.id}
+            className="p-3 border rounded bg-white flex justify-between text-sm"
+          >
+            <div>
+              <p className="font-medium">{it.item?.name}</p>
+              <p className="text-gray-600">
+                {it.patient?.first_name} {it.patient?.last_name} |{" "}
+                {it.patient?.age} | {it.patient?.gender}
+              </p>
             </div>
 
-            {/* ----------------- ACTION BUTTONS ----------------- */}
-            <div className="flex justify-end gap-3">
-                <button
-                    onClick={onBack}
-                    className="px-4 py-2 border rounded text-sm"
-                >
-                    Back
-                </button>
-
-                <button
-                    onClick={onSubmit}
-                    className="px-6 py-2 bg-green-600 text-white rounded text-sm shadow hover:bg-green-700"
-                >
-                    {mode=="create"?"Create Booking":"Update Booking"}
-                </button>
+            <div className="text-right">
+              <p className="font-semibold">₹{it.offer_price}</p>
+              {it.offer_price !== it.price && (
+                <p className="text-xs line-through text-gray-500">
+                  ₹{it.price}
+                </p>
+              )}
             </div>
-        </section>
-    );
+          </div>
+        ))}
+      </div>
+
+      {/* ADMIN DISCOUNT */}
+      {currentUser?.role && maxAdminDiscount > 0 && (
+        <div className="border rounded-lg p-4 bg-gray-50 space-y-3">
+          <h3 className="font-semibold text-sm text-gray-700 flex items-center gap-2">
+            <CheckCircle className="w-4 h-4 text-green-600" />
+            Admin Discount
+          </h3>
+
+          <div className="flex flex-col sm:flex-row gap-3">
+            <input
+              type="number"
+              min={0}
+              max={maxAdminDiscount}
+              value={adminInput}
+              onChange={(e) =>
+                setAdminInput(Number(e.target.value) || 0)
+              }
+              className="w-full sm:w-40 border px-3 py-2 rounded text-sm"
+            />
+
+            <button
+              disabled={adminDisabled}
+              onClick={() => onAdminDiscountChange(adminInput)}
+              className="px-4 py-2 bg-[#635bff] text-white rounded text-sm disabled:opacity-50"
+            >
+              Apply
+            </button>
+          </div>
+
+          <p className="text-xs text-gray-600">
+            Max discount allowed: <strong>₹{maxAdminDiscount}</strong>{" "}
+            ({maxPercentage}% of ₹{offerSum} or ₹{maxAmount})
+          </p>
+
+          {adminInput > maxAdminDiscount && (
+            <p className="text-xs text-red-600">
+              Discount exceeds allowed limit
+            </p>
+          )}
+        </div>
+      )}
+
+      {/* PRICING */}
+      <div className="border rounded-lg p-4 bg-gray-50 text-sm space-y-1">
+        <h3 className="font-semibold mb-2">Pricing Summary</h3>
+
+        <div className="flex justify-between">
+          <span>Base Total</span>
+          <span>₹{baseSum}</span>
+        </div>
+
+        <div className="flex justify-between">
+          <span>Offer Total</span>
+          <span>₹{offerSum}</span>
+        </div>
+
+        <div className="flex justify-between text-green-600">
+          <span>Core Discount</span>
+          <span>-₹{coreDiscount}</span>
+        </div>
+
+        {couponDiscount > 0 && (
+          <div className="flex justify-between text-green-600">
+            <span>Coupon Discount</span>
+            <span>-₹{couponDiscount}</span>
+          </div>
+        )}
+
+        {adminDiscount > 0 && (
+          <div className="flex justify-between text-green-600">
+            <span>Admin Discount</span>
+            <span>-₹{adminDiscount}</span>
+          </div>
+        )}
+
+        <div className="flex justify-between font-medium mt-2">
+          <span>Total Discount</span>
+          <span>-₹{totalDiscount}</span>
+        </div>
+
+        <div className="flex justify-between font-semibold text-lg mt-1">
+          <span>Final Amount</span>
+          <span>₹{finalAmount}</span>
+        </div>
+      </div>
+
+      {/* ACTIONS */}
+      <div className="flex justify-end gap-3">
+        <button onClick={onBack} className="px-4 py-2 border rounded">
+          Back
+        </button>
+
+        <button
+          onClick={onSubmit}
+          className="px-6 py-2 bg-green-600 text-white rounded shadow"
+        >
+          {mode === "create" ? "Create Booking" : "Update Booking"}
+        </button>
+      </div>
+    </section>
+  );
 };
 
 export default ReviewSection;
