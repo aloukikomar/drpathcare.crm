@@ -187,7 +187,7 @@ const BookingsPage: React.FC = () => {
       key: "initial_amount",
       label: "Initial Amount",
       sort_allowed: true,
-      render: (row: any) => `₹${Number(row.final_amount ?? 0).toFixed(2)}`,
+      render: (row: any) => `₹${Number(row.initial_amount ?? 0).toFixed(2)}`,
       width: "100px",
     },
     {

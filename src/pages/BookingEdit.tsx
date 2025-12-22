@@ -157,43 +157,80 @@ const BookingEdit: React.FC = () => {
     // UPDATE BOOKING
     // ================================
     const handleUpdateBooking = async (finalRemark: string) => {
-
         try {
-            const payload = {
-                
-                user: customer.id,
-                address: address.id,
-                scheduled_date: scheduledDate,
-                scheduled_time_slot: scheduledSlot,
+            if (!originalBooking) return;
 
-                admin_discount: adminDiscount,
-                coupon_discount: couponDiscount,
-                discount_amount: totalDiscount,
-                base_total: baseSum,
-                offer_total: offerSum,
-                final_amount: finalAmount,
-
+            const actions: string[] = [];
+            const payload: any = {
+                actions,
                 remarks: finalRemark || "Updated from CRM",
+            };
 
-                items: items.map((i) => ({
+            // -----------------------------
+            // 1️⃣ Schedule change
+            // -----------------------------
+            if (
+                originalBooking.scheduled_date !== scheduledDate ||
+                originalBooking.scheduled_time_slot !== scheduledSlot
+            ) {
+                actions.push("update_schedule");
+                payload.scheduled_date = scheduledDate;
+                payload.scheduled_time_slot = scheduledSlot;
+            }
+
+            // -----------------------------
+            // 2️⃣ Items change
+            // -----------------------------
+            const originalItemIds = originalBooking.items.map((i: any) => i.id).sort();
+            const updatedItemIds = items.map((i) => i.id).sort();
+
+            const itemsChanged =
+                originalItemIds.length !== updatedItemIds.length ||
+                originalItemIds.some((id: number, i: number) => id !== updatedItemIds[i]);
+
+            if (itemsChanged) {
+                actions.push("update_items");
+                payload.items = items.map((i) => ({
                     id: i.id,
                     patient: i.patient?.id,
                     base_price: i.price,
                     offer_price: i.offer_price,
                     product_type: i.itemType,
                     product_id: i.item?.id,
-                })),
-            };
-            console.log(payload)
-            await customerApi.patch(`/bookings/${id}/`, payload);
+                }));
+            }
+
+            // -----------------------------
+            // 3️⃣ Discount change
+            // -----------------------------
+            if (
+                Number(originalBooking.admin_discount) !== adminDiscount ||
+                Number(originalBooking.coupon_discount) !== couponDiscount
+            ) {
+                actions.push("update_discounts");
+                payload.admin_discount = adminDiscount;
+                payload.coupon = originalBooking.coupon?.id || null;
+            }
+
+            // -----------------------------
+            // Nothing changed
+            // -----------------------------
+            if (actions.length === 0) {
+                alert("No changes detected.");
+                return;
+            }
+
+            // 🔥 SINGLE BULK CALL
+            await customerApi.patch(`/bookings-bulk-update/${id}/`, payload);
 
             alert("Booking updated successfully!");
             navigate("/bookings");
         } catch (err) {
-            console.error(err);
+            console.error("Bulk update failed", err);
             alert("Failed to update booking");
         }
     };
+
 
     const goNext = () => setActiveTab((t) => Math.min(t + 1, TABS.length - 1));
     const goBack = () => setActiveTab((t) => Math.max(t - 1, 0));
