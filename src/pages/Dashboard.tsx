@@ -64,7 +64,7 @@ const Dashboard: React.FC = () => {
   ]);
   const [activities, setActivities] = useState<any[]>([]);
   const [loadingActivity, setLoadingActivity] = useState(false);
-
+const isAdmin = !!data?.revenue;
   useEffect(() => {
     const loadActivity = async () => {
       try {
@@ -76,7 +76,7 @@ const Dashboard: React.FC = () => {
 
         const res = await customerApi.get("/booking-actions/", {
           params: {
-            user: u.id,
+            user: isAdmin? null:u.id,
             limit: 6,
           },
         });
@@ -90,7 +90,7 @@ const Dashboard: React.FC = () => {
     };
 
     loadActivity();
-  }, []);
+  }, [isAdmin]);
 
   const ScrollableLegend = ({ payload }: any) => {
     if (!payload?.length) return null;
@@ -143,7 +143,7 @@ const Dashboard: React.FC = () => {
     loadDashboard();
   }, []);
 
-  const isAdmin = !!data?.revenue;
+  
 
   const formatRangeLabel = () => {
     const r = range[0];
