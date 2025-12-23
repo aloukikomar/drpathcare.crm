@@ -145,8 +145,26 @@ const LabProducts: React.FC = () => {
   const packageColumns = [
     { key: "id", label: "ID", sort_allowed: true  },
     { key: "name", label: "Package Name", sort_allowed: true  },
-    { key: "price", label: "Price" },
-    { key: "offer_price", label: "Offer Price" },
+    { key: "price", label: "Price" , sort_allowed: true },
+    {
+      key: "offer_price",
+      label: "Offer",
+      render: (row: any) => (
+        <span className="px-2 py-1 text-xs rounded bg-green-100 text-green-700">
+          ₹{row.offer_price ?? "0.00"}
+        </span>
+      ),
+      sort_allowed: true 
+    },
+    { 
+      key: "package_total_test",
+      label: "Total Tests",
+      render: (row: any) => (
+        <span className="px-2 py-1 text-xs rounded bg-blue-100 text-blue-700">
+          Tests {row.package_total_test ?? "1"}
+        </span>
+      ),
+     },
     {
       key: "actions",
       label: "",
