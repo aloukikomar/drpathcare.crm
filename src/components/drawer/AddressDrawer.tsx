@@ -197,8 +197,8 @@ export default function AddressDrawer({
 
     try {
       const res = isEdit
-        ? await customerApi.patch(`/client/addresses/${address.id}/`, payload)
-        : await customerApi.post(`/client/addresses/`, payload);
+        ? await customerApi.patch(`/crm/addresses/${address.id}/`, payload)
+        : await customerApi.post(`/crm/addresses/`, payload);
 
       onSaved?.(res.data ?? res);
       onClose();
