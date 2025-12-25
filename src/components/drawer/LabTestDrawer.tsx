@@ -31,6 +31,7 @@ const LabTestDrawer: React.FC<LabTestDrawerProps> = ({
         price: "",
         offer_price: "",
         category: "",
+        is_featured: false,
         child_tests: [] as string[],
     });
 
@@ -48,6 +49,7 @@ const LabTestDrawer: React.FC<LabTestDrawerProps> = ({
             setForm({
                 ...initialData,
                 category: initialData.category?.toString() || "",
+                is_featured: Boolean(initialData.is_featured), // ✅ ADD
                 child_tests: initialData.child_tests || [],
             });
         }
@@ -177,7 +179,18 @@ const LabTestDrawer: React.FC<LabTestDrawerProps> = ({
                     <Input label="Reported On" value={form.reported_on} onChange={(v) => handleChange("reported_on", v)} />
                     <Input label="Price" value={form.price} onChange={(v) => handleChange("price", v)} />
                     <Input label="Offer Price" value={form.offer_price} onChange={(v) => handleChange("offer_price", v)} />
+                    {/* FEATURED */}
+                    <div className="flex items-center gap-2 mt-2">
+                        <input
+                            type="checkbox"
+                            checked={form.is_featured}
+                            onChange={() =>
+                                handleChange("is_featured", !form.is_featured)
+                            }
 
+                        />
+                        <label className="font-medium">Featured Test</label>
+                    </div>
                     {/* CHILD TEST SEARCH */}
                     <div>
                         <label className="text-sm font-medium">Add Child Tests</label>

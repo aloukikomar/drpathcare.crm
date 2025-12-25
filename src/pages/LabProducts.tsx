@@ -6,7 +6,7 @@ import DataTable from "../components/DataTable";
 import FormDrawer from "../components/FormDrawer";
 import LabPackageDrawer from "../components/LabPackageDrawer";
 import LabTestDrawer from "../components/drawer/LabTestDrawer";
-import { Pencil } from "lucide-react";
+import { Pencil, Star } from "lucide-react";
 import type { FormField } from "../components/FormDrawer";
 
 const LabProducts: React.FC = () => {
@@ -105,9 +105,9 @@ const LabProducts: React.FC = () => {
      TABLE COLUMNS
   --------------------------- */
   const labTestColumns = [
-    { key: "id", label: "ID", width: "60px",sort_allowed: true },
+    { key: "id", label: "ID", width: "60px", sort_allowed: true },
     { key: "test_code", label: "Code", width: "110px" },
-    { key: "name", label: "Test Name",sort_allowed: true },
+    { key: "name", label: "Test Name", sort_allowed: true },
     {
       key: "category_name",
       label: "Category",
@@ -128,6 +128,21 @@ const LabProducts: React.FC = () => {
       ),
     },
     {
+      key: "is_featured",
+      label: "Featured",
+      width: "80px",
+      render: (row: any) => (
+        <span title={row.is_featured ? "Featured" : "Not featured"}>
+          <Star
+            className={`w-4 h-4 ${row.is_featured
+              ? "text-yellow-500 fill-yellow-400"
+              : "text-gray-300"
+              }`}
+          />
+        </span>
+      ),
+    },
+    {
       key: "edit",
       label: "Edit",
       width: "70px",
@@ -143,9 +158,9 @@ const LabProducts: React.FC = () => {
   ];
 
   const packageColumns = [
-    { key: "id", label: "ID", sort_allowed: true  },
-    { key: "name", label: "Package Name", sort_allowed: true  },
-    { key: "price", label: "Price" , sort_allowed: true },
+    { key: "id", label: "ID", sort_allowed: true },
+    { key: "name", label: "Package Name", sort_allowed: true },
+    { key: "price", label: "Price", sort_allowed: true },
     {
       key: "offer_price",
       label: "Offer",
@@ -154,9 +169,9 @@ const LabProducts: React.FC = () => {
           ₹{row.offer_price ?? "0.00"}
         </span>
       ),
-      sort_allowed: true 
+      sort_allowed: true
     },
-    { 
+    {
       key: "package_total_test",
       label: "Total Tests",
       render: (row: any) => (
@@ -164,7 +179,22 @@ const LabProducts: React.FC = () => {
           Tests {row.package_total_test ?? "1"}
         </span>
       ),
-     },
+    },
+    {
+      key: "is_featured",
+      label: "Featured",
+      width: "80px",
+      render: (row: any) => (
+        <span title={row.is_featured ? "Featured" : "Not featured"}>
+          <Star
+            className={`w-4 h-4 ${row.is_featured
+                ? "text-yellow-500 fill-yellow-400"
+                : "text-gray-300"
+              }`}
+          />
+        </span>
+      ),
+    },
     {
       key: "actions",
       label: "",
