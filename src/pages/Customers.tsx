@@ -90,12 +90,26 @@ const Customers: React.FC = () => {
           { name: "first_name", label: "First Name", type: "text", required: true },
           { name: "last_name", label: "Last Name", type: "text" },
           { name: "email", label: "Email", type: "text" },
-          { name: "mobile", label: "Mobile", type: "text", required: true },
-          { name: "gender", label: "Gender", type: "select", options: [
-            { label: "Male", value: "Male" },
-            { label: "Female", value: "Female" },
-            { label: "Other", value: "Other" },
-          ] },
+          {
+            name: "mobile",
+            label: "Mobile Number",
+            type: "text",
+            required: true,
+            placeholder: "10 digit mobile number",
+            numericOnly: true,
+            minLength: 10,
+            maxLength: 10,
+            pattern: /^[0-9]{10}$/,
+            patternMessage: "Mobile number must be exactly 10 digits",
+            helper: "Enter a valid 10 digit Indian mobile number",
+          },
+          {
+            name: "gender", label: "Gender", type: "select", options: [
+              { label: "Male", value: "Male" },
+              { label: "Female", value: "Female" },
+              { label: "Other", value: "Other" },
+            ]
+          },
           { name: "age", label: "Age", type: "number" },
         ],
       });
@@ -108,11 +122,13 @@ const Customers: React.FC = () => {
         fields: [
           { name: "first_name", label: "First Name", type: "text", required: true },
           { name: "last_name", label: "Last Name", type: "text" },
-          { name: "gender", label: "Gender", type: "select", options: [
-            { label: "Male", value: "Male" },
-            { label: "Female", value: "Female" },
-            { label: "Other", value: "Other" },
-          ] },
+          {
+            name: "gender", label: "Gender", type: "select", options: [
+              { label: "Male", value: "Male" },
+              { label: "Female", value: "Female" },
+              { label: "Other", value: "Other" },
+            ]
+          },
           { name: "age", label: "Age", type: "number" },
         ],
       });
@@ -175,12 +191,26 @@ const Customers: React.FC = () => {
                 { name: "first_name", label: "First Name", type: "text", required: true },
                 { name: "last_name", label: "Last Name", type: "text" },
                 { name: "email", label: "Email", type: "text" },
-                { name: "mobile", label: "Mobile", type: "text", disabled: true },
-                { name: "gender", label: "Gender", type: "select", options: [
-                  { label: "Male", value: "Male" },
-                  { label: "Female", value: "Female" },
-                  { label: "Other", value: "Other" },
-                ] },
+                {
+                  name: "mobile",
+                  label: "Mobile Number",
+                  type: "text",
+                  required: true,
+                  placeholder: "10 digit mobile number",
+                  numericOnly: true,
+                  minLength: 10,
+                  maxLength: 10,
+                  pattern: /^[0-9]{10}$/,
+                  patternMessage: "Mobile number must be exactly 10 digits",
+                  helper: "Enter a valid 10 digit Indian mobile number",
+                },
+                {
+                  name: "gender", label: "Gender", type: "select", options: [
+                    { label: "Male", value: "Male" },
+                    { label: "Female", value: "Female" },
+                    { label: "Other", value: "Other" },
+                  ]
+                },
                 { name: "age", label: "Age", type: "number" },
               ]
             )
@@ -221,11 +251,13 @@ const Customers: React.FC = () => {
               [
                 { name: "first_name", label: "First Name", type: "text", required: true },
                 { name: "last_name", label: "Last Name", type: "text" },
-                { name: "gender", label: "Gender", type: "select", options: [
-                  { label: "Male", value: "Male" },
-                  { label: "Female", value: "Female" },
-                  { label: "Other", value: "Other" },
-                ] },
+                {
+                  name: "gender", label: "Gender", type: "select", options: [
+                    { label: "Male", value: "Male" },
+                    { label: "Female", value: "Female" },
+                    { label: "Other", value: "Other" },
+                  ]
+                },
                 { name: "age", label: "Age", type: "number" },
               ]
             )

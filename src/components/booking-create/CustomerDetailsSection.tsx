@@ -208,9 +208,8 @@ const CustomerDetailsSection: React.FC<Props> = ({
                 <div
                   key={addr.id}
                   onClick={() => onSelectAddress(addr)}
-                  className={`relative border rounded-lg p-3 cursor-pointer transition ${
-                    selected ? "border-indigo-600 shadow" : "border-gray-300 hover:border-indigo-500"
-                  }`}
+                  className={`relative border rounded-lg p-3 cursor-pointer transition ${selected ? "border-indigo-600 shadow" : "border-gray-300 hover:border-indigo-500"
+                    }`}
                 >
                   <button
                     type="button"
@@ -244,9 +243,8 @@ const CustomerDetailsSection: React.FC<Props> = ({
           type="button"
           disabled={!canContinue}
           onClick={onContinue}
-          className={`px-6 py-2 rounded text-white text-sm ${
-            canContinue ? "bg-primary hover:bg-primary/90" : "bg-gray-300 cursor-not-allowed"
-          }`}
+          className={`px-6 py-2 rounded text-white text-sm ${canContinue ? "bg-primary hover:bg-primary/90" : "bg-gray-300 cursor-not-allowed"
+            }`}
         >
           Continue
         </button>
@@ -266,13 +264,27 @@ const CustomerDetailsSection: React.FC<Props> = ({
           { name: "first_name", label: "First Name", type: "text", required: true },
           { name: "last_name", label: "Last Name", type: "text" },
           { name: "email", label: "Email", type: "text" },
-          { name: "mobile", label: "Mobile", type: "text", required: true },
-          { name: "gender", label: "Gender", type: "select",default: "Male", options: [
-            { label: "Male", value: "Male" },
-            { label: "Female", value: "Female" },
-            { label: "Other", value: "Other" },
-          ] },
-          { name: "age", label: "Age", type: "number" , required: true},
+          {
+            name: "mobile",
+            label: "Mobile Number",
+            type: "text",
+            required: true,
+            placeholder: "10 digit mobile number",
+            numericOnly: true,
+            minLength: 10,
+            maxLength: 10,
+            pattern: /^[0-9]{10}$/,
+            patternMessage: "Mobile number must be exactly 10 digits",
+            helper: "Enter a valid 10 digit Indian mobile number",
+          },
+          {
+            name: "gender", label: "Gender", type: "select", default: "Male", options: [
+              { label: "Male", value: "Male" },
+              { label: "Female", value: "Female" },
+              { label: "Other", value: "Other" },
+            ]
+          },
+          { name: "age", label: "Age", type: "number", required: true },
         ]}
         onSuccess={(updatedCustomer: any) => {
           onSelectCustomer(updatedCustomer);
@@ -293,13 +305,27 @@ const CustomerDetailsSection: React.FC<Props> = ({
           { name: "first_name", label: "First Name", type: "text", required: true },
           { name: "last_name", label: "Last Name", type: "text" },
           { name: "email", label: "Email", type: "text" },
-          { name: "mobile", label: "Mobile", type: "text", required: true },
-          { name: "gender", label: "Gender", type: "select",default: "Male", options: [
-            { label: "Male", value: "Male" },
-            { label: "Female", value: "Female" },
-            { label: "Other", value: "Other" },
-          ] },
-          { name: "age", label: "Age", type: "number" , required: true},
+          {
+            name: "mobile",
+            label: "Mobile Number",
+            type: "text",
+            required: true,
+            placeholder: "10 digit mobile number",
+            numericOnly: true,
+            minLength: 10,
+            maxLength: 10,
+            pattern: /^[0-9]{10}$/,
+            patternMessage: "Mobile number must be exactly 10 digits",
+            helper: "Enter a valid 10 digit Indian mobile number",
+          },
+          {
+            name: "gender", label: "Gender", type: "select", default: "Male", options: [
+              { label: "Male", value: "Male" },
+              { label: "Female", value: "Female" },
+              { label: "Other", value: "Other" },
+            ]
+          },
+          { name: "age", label: "Age", type: "number", required: true },
         ]}
         onSuccess={(updatedCustomer: any) => {
           onSelectCustomer(updatedCustomer);

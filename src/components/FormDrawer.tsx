@@ -26,6 +26,16 @@ export type FormField =
         // optional helper text shown below the control
         helper?: string;
         default?: any;
+        // ✅ NEW VALIDATION OPTIONS
+        minLength?: number;
+        maxLength?: number;
+        pattern?: RegExp;
+        patternMessage?: string;
+        min?: number;
+        max?: number;
+        // ✅ UX HINTS (NEW)
+        numericOnly?: boolean;
+
     };
 
 export interface FormDrawerProps {
@@ -167,25 +177,61 @@ export default function FormDrawer({
 
     const validate = (): boolean => {
         const newErrors: Record<string, string> = {};
+
         formFields.forEach((f) => {
-            if (f.required && !f.disabled) {
-                const val = values[f.name];
-                if (f.type === "file") {
-                    if (!val) newErrors[f.name] = "Please upload a file.";
-                } else if (f.type === "checkbox" || f.type === "switch") {
-                    // checkbox may be required true
-                    if (val !== true) newErrors[f.name] = "Required";
-                } else {
-                    if (val === "" || val === null || typeof val === "undefined") {
-                        newErrors[f.name] = `${f.label || f.name} is required.`;
-                    }
+            if (f.disabled) return;
+
+            const val = values[f.name];
+
+            // REQUIRED
+            if (f.required) {
+                if (
+                    val === "" ||
+                    val === null ||
+                    typeof val === "undefined" ||
+                    (f.type === "file" && !val) ||
+                    ((f.type === "checkbox" || f.type === "switch") && val !== true)
+                ) {
+                    newErrors[f.name] = `${f.label} is required.`;
+                    return;
                 }
+            }
+
+            // STRING LENGTH
+            if (typeof val === "string") {
+                if (f.minLength && val.length < f.minLength) {
+                    newErrors[f.name] = `${f.label} must be at least ${f.minLength} characters.`;
+                    return;
+                }
+                if (f.maxLength && val.length > f.maxLength) {
+                    newErrors[f.name] = `${f.label} must be at most ${f.maxLength} characters.`;
+                    return;
+                }
+            }
+
+            // NUMBER RANGE
+            if (typeof val === "number") {
+                if (f.min !== undefined && val < f.min) {
+                    newErrors[f.name] = `${f.label} must be ≥ ${f.min}.`;
+                    return;
+                }
+                if (f.max !== undefined && val > f.max) {
+                    newErrors[f.name] = `${f.label} must be ≤ ${f.max}.`;
+                    return;
+                }
+            }
+
+            // REGEX PATTERN
+            if (f.pattern && typeof val === "string" && !f.pattern.test(val)) {
+                newErrors[f.name] = f.patternMessage || `${f.label} format is invalid.`;
+                return;
             }
         });
 
         setErrors(newErrors);
         return Object.keys(newErrors).length === 0;
     };
+
 
     const buildPayload = async (): Promise<{ body: any; headers?: Record<string, string> }> => {
         // If any file field is present and has a File -> FormData
@@ -361,11 +407,29 @@ export default function FormDrawer({
                                         <input
                                             type="text"
                                             value={value ?? ""}
-                                            onChange={(e) => handleChange(field.name, e.target.value)}
+                                            onChange={(e) => {
+                                                let v = e.target.value;
+
+                                                // ✅ UX: allow only digits if numericOnly
+                                                if (field.numericOnly) {
+                                                    v = v.replace(/\D/g, "");
+                                                }
+
+                                                // ✅ UX: enforce maxLength while typing
+                                                if (field.maxLength && v.length > field.maxLength) {
+                                                    v = v.slice(0, field.maxLength);
+                                                }
+
+                                                handleChange(field.name, v);
+                                            }}
                                             placeholder={field.placeholder}
                                             disabled={disabled}
-                                            className={`w-full border rounded px-3 py-2 text-sm ${disabled ? "bg-gray-50 text-gray-500" : "bg-white"}`}
+                                            maxLength={field.maxLength}
+                                            inputMode={field.numericOnly ? "numeric" : undefined}
+                                            className={`w-full border rounded px-3 py-2 text-sm ${disabled ? "bg-gray-50 text-gray-500" : "bg-white"
+                                                }`}
                                         />
+
                                     )}
 
                                     {field.type === "textarea" && (
