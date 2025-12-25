@@ -12,7 +12,7 @@ interface HeaderProps {
 
 const Header: React.FC<HeaderProps> = ({ onMenuToggle, title = "" }) => {
   const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null);
-  const [user, setUser] = useState<{ name?: string; email?: string; role?: string } | null>(null);
+  const [user, setUser] = useState<{ name?: string; email?: string; role?: string; mobile?:string; user_code?:string } | null>(null);
   const navigate = useNavigate();
 
   // Load user from localStorage
@@ -22,11 +22,10 @@ const Header: React.FC<HeaderProps> = ({ onMenuToggle, title = "" }) => {
       if (raw) {
         const parsed = JSON.parse(raw);
         setUser({
-          name:
-            parsed.first_name && parsed.last_name
-              ? `${parsed.first_name} ${parsed.last_name}`
-              : parsed.first_name || parsed.email || "User",
+          name: parsed.name || "",
+          mobile: parsed.mobile || "",
           email: parsed.email || "",
+          user_code: parsed.user_code || "",
           role:
             typeof parsed.role === "object"
               ? parsed.role.name

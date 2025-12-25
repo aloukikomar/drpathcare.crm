@@ -5,10 +5,7 @@ interface UserPopoverProps {
   anchorEl: HTMLElement | null;
   open: boolean;
   onClose: () => void;
-  user?: {
-    role?: string;
-    email?: string;
-  };
+  user?: any;
   onSettings?: () => void;
   onProfile?: () => void;
   onSignOut?: () => void;
@@ -48,7 +45,10 @@ const UserPopover: React.FC<UserPopoverProps> = ({
         {/* User info */}
         <div className="pb-3">
           <div className="text-sm font-semibold text-gray-900">
-            {user?.role || "User"}
+            {user?.role || "User"} ({user?.user_code || ""})
+          </div>
+          <div className="text-xs text-gray-500">
+            {user?.name || "Name"} ( {user?.mobile || "Mobile"} )
           </div>
           <div className="text-xs text-gray-500">
             {user?.email || ""}

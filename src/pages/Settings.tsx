@@ -25,6 +25,8 @@ export default function Settings() {
   const [roles, setRoles] = useState<any[]>([]);
   const [loadingRoles, setLoadingRoles] = useState(false);
   const [mode, setMode] = useState<"edit" | "create">("edit");
+  const [managers, setManagers] = useState<any[]>([]);
+  const [loadingManagers, setLoadingManagers] = useState(false);
 
   // ======================================================
   // LOAD CURRENT USER
@@ -64,6 +66,26 @@ export default function Settings() {
         setRoles(res.results || res.data || []);
       } finally {
         setLoadingRoles(false);
+      }
+    })();
+  }, [isAdmin]);
+
+  useEffect(() => {
+    if (!isAdmin) return;
+
+    (async () => {
+      try {
+        setLoadingManagers(true);
+
+        // Fetch users who can act as managers
+        const res = await customerApi.get("/crm/users/?page_size=500&staff=true");
+
+        setManagers(res.results || []);
+      } catch (err) {
+        console.error("Failed to load managers", err);
+        setManagers([]);
+      } finally {
+        setLoadingManagers(false);
       }
     })();
   }, [isAdmin]);
@@ -142,6 +164,8 @@ export default function Settings() {
                       gender: "Male",
                       age: null,
                       role: "",
+                      user_code: "",     // ✅ ADD
+                      parent: null,      // ✅ ADD
                     });
                   }}
                   className="flex items-center gap-2 text-sm bg-primary text-white px-3 py-2 rounded-lg whitespace-nowrap"
@@ -269,6 +293,13 @@ export default function Settings() {
                   </select>
                 </div>
 
+                <Input
+                  label="User Code"
+                  value={selectedUser.user_code || ""}
+                  onChange={(v) =>
+                    setSelectedUser({ ...selectedUser, user_code: v })
+                  }
+                />
 
                 {/* AGE ✅ RESTORED */}
                 <div>
@@ -286,6 +317,56 @@ export default function Settings() {
                     }
                   />
                 </div>
+
+                {/* MANAGER / PARENT */}
+                <div>
+                  <label className="text-sm text-gray-600 mb-1 block">
+                    Manager (Parent User)
+                  </label>
+
+                  {isAdmin ? (
+                    /* ================= ADMIN: EDITABLE ================= */
+                    <select
+                      className="w-full border px-3 py-2 rounded-lg"
+                      value={selectedUser.parent ?? ""}
+                      disabled={loadingManagers}
+                      onChange={(e) =>
+                        setSelectedUser({
+                          ...selectedUser,
+                          parent: e.target.value ? Number(e.target.value) : null,
+                        })
+                      }
+                    >
+                      <option value="">— No Manager —</option>
+
+                      {managers
+                        .filter((u) => u.id !== selectedUser.id) // prevent self-parent
+                        .map((u) => (
+                          <option key={u.id} value={u.id}>
+                            {u.first_name} {u.last_name}
+                            {` (${u.role_name})`}
+                            {u.user_code ? ` ( ${u.user_code} )` : ""}
+                          </option>
+                        ))}
+                    </select>
+                  ) : (
+                    /* ================= NON-ADMIN: READ ONLY ================= */
+                    <input
+                      disabled
+                      className="w-full border px-3 py-2 rounded-lg bg-gray-100"
+                      value={
+                        selectedUser.parent_name ||
+                        selectedUser.parent?.name ||
+                        "—"
+                      }
+                    />
+                  )}
+
+                  <p className="text-xs text-gray-500 mt-1">
+                    Reporting manager for this user
+                  </p>
+                </div>
+
 
                 <div>
                   <label className="text-sm text-gray-600 mb-1 block">

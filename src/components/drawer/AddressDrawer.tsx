@@ -203,7 +203,6 @@ export default function AddressDrawer({
       onSaved?.(res.data ?? res);
       onClose();
     } catch (err: any) {
-      console.log(err);
       setError(err?.serverMessage || "Failed to save address");
     } finally {
       setSaving(false);

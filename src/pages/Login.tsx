@@ -70,11 +70,10 @@ export default function LoginPage() {
       localStorage.setItem("access", data.access);
       localStorage.setItem("refresh", data.refresh);
       localStorage.setItem("user", JSON.stringify(data.user));
-      console.log(JSON.stringify(data.user))
 
       navigate("/dashboard");
     } catch (err: any) {
-      setError(err.message || "Invalid OTP");
+      setError(err.response.data.error || "Invalid OTP");
     } finally {
       setLoading(false);
     }
