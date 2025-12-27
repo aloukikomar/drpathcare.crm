@@ -45,9 +45,56 @@ const BookingDetailsSection: React.FC<Props> = ({
   onOpenTestsDrawer,
 }) => {
   const today = new Date().toISOString().split("T")[0];
+  const [duplicateMessage, setDuplicateMessage] = React.useState<string | null>(null);
+
+  React.useEffect(() => {
+    if (items.length === 0) return;
+
+    const { clean, duplicates } = sanitizeItems(items);
+
+    if (duplicates.length === 0) return;
+
+    // 1️⃣ Persist cleaned data (THIS FIXES NEXT PAGE)
+    setItems(clean);
+
+    // 2️⃣ Persist message ONCE
+    const lines = duplicates.map(
+      d => `${d.item?.name} – ${d.patient?.first_name}`
+    );
+
+    setDuplicateMessage(
+      `Duplicate items were automatically removed:\n• ${lines.join("\n• ")}`
+    );
+  }, [items]); // 👈 DEPENDS ON items ONLY
+
+
+  function sanitizeItems(items: ItemRow[]) {
+    const seen = new Set<string>();
+    const clean: ItemRow[] = [];
+    const duplicates: ItemRow[] = [];
+
+    for (const item of items) {
+      const key = `${item.itemType}-${item.item?.id}-${item.patient?.id}`;
+
+      if (seen.has(key)) {
+        duplicates.push(item);
+      } else {
+        seen.add(key);
+        clean.push(item);
+      }
+    }
+
+    return { clean, duplicates };
+  }
+
+  const { clean, duplicates } = React.useMemo(
+    () => sanitizeItems(items),
+    [items]
+  );
 
   const canContinue =
     items.length > 0 && scheduledDate !== "" && scheduledSlot !== "";
+
 
   return (
     <section className="bg-white p-4 border rounded-lg shadow-sm space-y-6">
@@ -66,11 +113,10 @@ const BookingDetailsSection: React.FC<Props> = ({
             if (!customer) return alert("Please select a customer first");
             onOpenTestsDrawer();
           }}
-          className={`px-4 py-2 rounded text-sm ${
-            customer
-              ? "bg-indigo-600 text-white"
-              : "bg-gray-300 text-gray-500 cursor-not-allowed"
-          }`}
+          className={`px-4 py-2 rounded text-sm ${customer
+            ? "bg-indigo-600 text-white"
+            : "bg-gray-300 text-gray-500 cursor-not-allowed"
+            }`}
         >
           Add Items
         </button>
@@ -141,7 +187,7 @@ const BookingDetailsSection: React.FC<Props> = ({
               </tr>
             </thead>
             <tbody>
-              {items.map((r) => (
+              {clean.map((r) => (
                 <tr key={r.id} className="border-t">
                   <td className="p-2">{r.patient?.first_name}</td>
                   <td className="p-2">{r.itemType}</td>
@@ -151,7 +197,7 @@ const BookingDetailsSection: React.FC<Props> = ({
                   <td className="p-2 text-right">
                     <button
                       onClick={() =>
-                        setItems(items.filter((x) => x.id !== r.id))
+                        setItems(clean.filter((x) => x.id !== r.id))
                       }
                       className="text-red-600"
                     >
@@ -164,6 +210,13 @@ const BookingDetailsSection: React.FC<Props> = ({
           </table>
         )}
       </div>
+
+      {duplicateMessage && (
+        <div className="mt-3 rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-700 whitespace-pre-line">
+          {duplicateMessage}
+        </div>
+      )}
+
 
 
       {/* ====================================================
@@ -180,11 +233,10 @@ const BookingDetailsSection: React.FC<Props> = ({
         <button
           disabled={!canContinue}
           onClick={onContinue}
-          className={`px-6 py-2 rounded text-white text-sm ${
-            canContinue
-              ? "bg-primary hover:bg-primary/90"
-              : "bg-gray-300 cursor-not-allowed"
-          }`}
+          className={`px-6 py-2 rounded text-white text-sm ${canContinue
+            ? "bg-primary hover:bg-primary/90"
+            : "bg-gray-300 cursor-not-allowed"
+            }`}
         >
           Continue
         </button>

@@ -587,7 +587,7 @@ const BookingsPage: React.FC = () => {
 
             {/* NOTES */}
             {h.notes && (
-              <div className="text-sm text-gray-600">
+              <div className="text-sm text-gray-600 whitespace-pre-line">
                 {h.notes}
               </div>
             )}
