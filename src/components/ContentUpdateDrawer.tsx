@@ -31,6 +31,9 @@ const ContentDrawer: React.FC<Props> = ({ open, onClose, initialData, onSuccess 
   const [mediaType, setMediaType] = useState("image");
   const [tagType, setTagType] = useState("unused");
   const [file, setFile] = useState<File | null>(null);
+  const rawUser = localStorage.getItem("user");
+  const user = rawUser ? JSON.parse(rawUser) : null;
+  const isAdmin = Boolean(user?.role?.name == 'Admin');
 
   // --------------------------------------------------------------
   // PREFILL EDIT MODE
@@ -101,6 +104,24 @@ const ContentDrawer: React.FC<Props> = ({ open, onClose, initialData, onSuccess 
     } catch (err) {
       console.error(err);
       alert("Failed to update content");
+    }
+  };
+
+  const handleDelete = async () => {
+    if (!initialData?.id) return;
+
+    const ok = window.confirm(
+      "Are you sure you want to delete this Content? This action cannot be undone."
+    );
+    if (!ok) return;
+
+    try {
+      await customerApi.delete(`crm/content/${initialData.id}/`);
+      onSuccess?.();
+      onClose();
+    } catch (err) {
+      console.error("Delete failed", err);
+      alert("Failed to delete lab test");
     }
   };
 
@@ -210,6 +231,15 @@ const ContentDrawer: React.FC<Props> = ({ open, onClose, initialData, onSuccess 
 
         {/* FOOTER */}
         <div className="p-4 border-t flex justify-end gap-2">
+          {isEdit && isAdmin && (
+            <button
+              onClick={handleDelete}
+              className="px-4 py-2 border rounded text-sm border border-red-500 text-red-600 rounded-lg hover:bg-red-50"
+            >
+              {/* <Trash2 className="w-4 h-4" /> */}
+              Delete
+            </button>
+          )}
           <button
             onClick={onClose}
             className="px-4 py-2 border rounded text-sm"

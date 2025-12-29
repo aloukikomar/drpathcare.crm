@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from "react";
-import { X, Search } from "lucide-react";
+import { X, Search, Trash2 } from "lucide-react";
 import { globalApi } from "../../api/axios";
 import { debounce } from "lodash";
 
@@ -42,6 +42,10 @@ const LabTestDrawer: React.FC<LabTestDrawerProps> = ({
     const [search, setSearch] = useState("");
     const [searchResults, setSearchResults] = useState<any[]>([]);
     const [loadingSearch, setLoadingSearch] = useState(false);
+
+    const rawUser = localStorage.getItem("user");
+    const user = rawUser ? JSON.parse(rawUser) : null;
+    const isAdmin = Boolean(user?.role?.name == 'Admin');
 
     /* ------------------ INIT ------------------ */
     useEffect(() => {
@@ -124,6 +128,24 @@ const LabTestDrawer: React.FC<LabTestDrawerProps> = ({
         } catch (err) {
             console.error("Lab test save failed", err);
             alert("Failed to save lab test");
+        }
+    };
+
+    const handleDelete = async () => {
+        if (!initialData?.id) return;
+
+        const ok = window.confirm(
+            "Are you sure you want to delete this lab test? This action cannot be undone."
+        );
+        if (!ok) return;
+
+        try {
+            await globalApi.delete(`crm/lab-tests/${initialData.id}/`);
+            onSuccess?.();
+            onClose();
+        } catch (err) {
+            console.error("Delete failed", err);
+            alert("Failed to delete lab test");
         }
     };
 
@@ -256,6 +278,15 @@ const LabTestDrawer: React.FC<LabTestDrawerProps> = ({
 
                     {/* ACTION */}
                     <div className="pt-4">
+                        {isEdit && isAdmin && (
+                            <button
+                                onClick={handleDelete}
+                                className="w-full mb-2 py-2 border border-red-500 text-red-600 rounded-lg hover:bg-red-50"
+                            >
+                                {/* <Trash2 className="w-4 h-4" /> */}
+                                Delete
+                            </button>
+                        )}
                         <button
                             onClick={handleSubmit}
                             className="w-full bg-primary text-white py-2 rounded-lg"
