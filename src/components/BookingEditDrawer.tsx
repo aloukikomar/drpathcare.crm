@@ -177,6 +177,7 @@ export default function BookingEditDrawer({
 
         if (user) {
             const parsed = JSON.parse(user);
+            console.log(parsed?.role?.name)
             if (parsed?.role?.name == 'Admin') {
                 return [
                     { value: "update_status", label: "Update Status" },
@@ -192,11 +193,17 @@ export default function BookingEditDrawer({
                 { value: "update_agent", label: "Update Agent" },
                 { value: "add_remark", label: "Add Remark" },
             ]
-            else if (currentStatus == 'verified') return [
-                { value: "update_status", label: "Update Status" },
-                { value: "update_agent", label: "Update Agent" },
-                { value: "add_remark", label: "Add Remark" },
-            ]
+            else if (currentStatus == 'verified') {
+                if (parsed?.role?.name == 'Team Lead' || parsed?.role?.name == 'Agent') return [
+                        { value: "add_remark", label: "Add Remark" },
+                    ]
+                return [
+                        { value: "update_status", label: "Update Status" },
+                        { value: "update_agent", label: "Update Agent" },
+                        { value: "add_remark", label: "Add Remark" },
+                    ]
+                    }
+                
             else if (currentStatus == 'sample_collected') return [
                 { value: "update_status", label: "Update Status" },
                 { value: "update_agent", label: "Update Agent" },
@@ -216,7 +223,7 @@ export default function BookingEditDrawer({
                 { value: "add_remark", label: "Add Remark" },
             ]
             else if (currentStatus == 'cancelled') return [
-
+                { value: "update_status", label: "Update Status" },
                 { value: "add_remark", label: "Add Remark" },
             ]
         }
@@ -255,6 +262,9 @@ export default function BookingEditDrawer({
             else if (currentStatus == 'report_uploaded') return [
                 { value: "completed", label: "Completed" },
                 { value: "cancelled", label: "Cancelled" },
+            ]
+            else if (currentStatus == 'cancelled') return [
+                { value: "open", label: "Open" }
             ]
             else return []
         }

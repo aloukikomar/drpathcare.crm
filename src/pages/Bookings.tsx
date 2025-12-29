@@ -50,7 +50,9 @@ const BookingsPage: React.FC = () => {
     const user = localStorage.getItem('user')
 
         if (user) {
+            
             const parsed = JSON.parse(user);
+            return true
             if (parsed?.role?.name == 'Admin') {
               return true
             }
@@ -375,7 +377,7 @@ const BookingsPage: React.FC = () => {
         onClose={() => setDrawerPayments({ open: false, id: null })}
         apiUrl={
           drawerPayments.id
-            ? `/payments/?booking=${drawerPayments.id}`
+            ? `/payments/?booking=${drawerPayments.id}&page_size=100`
             : null
         }
         heading={`Payments for Booking #${drawerPayments.id}`}
@@ -488,7 +490,7 @@ const BookingsPage: React.FC = () => {
         onClose={() => setDrawerDocuments({ open: false, id: null })}
         apiUrl={
           drawerDocuments.id
-            ? `/booking-documents/?booking=${drawerDocuments.id}`
+            ? `/booking-documents/?booking=${drawerDocuments.id}&page_size=100`
             : null
         }
         heading="Documents"
@@ -554,7 +556,7 @@ const BookingsPage: React.FC = () => {
         onClose={() => setDrawerHistory({ open: false, id: null })}
         apiUrl={
           drawerHistory.id
-            ? `/booking-actions/?booking=${drawerHistory.id}`
+            ? `/booking-actions/?booking=${drawerHistory.id}&page_size=100`
             : null
         }
         heading="Action History"

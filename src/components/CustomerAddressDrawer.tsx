@@ -62,7 +62,7 @@ export default function CustomerAddressDrawer({
         setStep("customer");
         onClose();
       }}
-      apiUrl={`/crm/addresses/?customer=${selectedCustomer?.id}`}
+      apiUrl={`/crm/addresses/?customer=${selectedCustomer?.id}&page_size=100`}
       heading="Select Address"
       subHeading={
         selectedCustomer
