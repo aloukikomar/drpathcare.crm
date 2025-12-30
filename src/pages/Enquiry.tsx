@@ -5,7 +5,8 @@ import DataTable from "../components/DataTable";
 import FormDrawer from "../components/FormDrawer";
 import EnquiryToCustomerDrawer from "../components/drawer/EnquiryToCustomerDrawer";
 
-import { Pencil, UserPlus } from "lucide-react";
+import { Pencil, PhoneOutgoing, UserPlus } from "lucide-react";
+import { customerApi } from "../api/axios";
 
 const Enquiry: React.FC = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -47,6 +48,22 @@ const Enquiry: React.FC = () => {
         return "bg-gray-100 text-gray-700 border-gray-200";
     }
   };
+
+  const handleMakeCall = async (id) => {
+    try {
+      const res = await customerApi.post("/calls/connect/", {
+        "call_type": "enquiry",
+        "enquiry_id": id
+      })
+      alert("Call initiated");
+    } catch (err: any) {
+      console.error(err);
+      alert("Failed to initiat call " + String(err.serverMessage));
+    } finally {
+      //setSaving(false);
+    }
+  }
+
 
   // -------------------------------------
   // TABLE COLUMNS
@@ -110,6 +127,14 @@ const Enquiry: React.FC = () => {
       width: "150px",
       render: (row: any) => (
         <div className="flex gap-2">
+          <button
+            className={`p-1 rounded-md ${true ? "hover:bg-gray-100 cursor-pointer" : "opacity-40 cursor-not-allowed"
+              }`} title="Edit"
+            disabled={!true}
+            onClick={() => handleMakeCall(row.id)}
+          >
+            <PhoneOutgoing className="w-5 h-5 text-gray-600 hover:text-primary " />
+          </button>
           {/* Update Status */}
           <button
             className="p-1 rounded hover:bg-gray-100"

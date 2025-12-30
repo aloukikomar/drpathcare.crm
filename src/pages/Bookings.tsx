@@ -4,7 +4,7 @@ import Sidebar from "../components/Sidebar";
 import DataTable from "../components/DataTable";
 import CommonDrawer from "../components/CommonDrawer";
 
-import { Pencil, IndianRupee, FileText, History, DownloadIcon, RefreshCwIcon, LinkIcon } from "lucide-react";
+import { Pencil, IndianRupee, FileText, History, DownloadIcon, RefreshCwIcon, LinkIcon, PhoneOutgoing } from "lucide-react";
 import BookingEditDrawer from "../components/BookingEditDrawer";
 import { useNavigate } from "react-router-dom";
 import { customerApi } from "../api/axios";
@@ -45,40 +45,54 @@ const BookingsPage: React.FC = () => {
 
   const handleOpenFilter = () => setFilterModalOpen(true);
   const handleOpenAdd = () => navigate("/bookings/create");
+  const handleMakeCall = async (booking_id) => {
+    try {
+      const res = await customerApi.post("/calls/connect/", {
+        "call_type": "booking",
+        "booking_id": booking_id
+      })
+      alert("Call initiated");
+    } catch (err: any) {
+      console.error(err);
+      alert("Failed to initiat call " + String(err.serverMessage));
+    } finally {
+      //setSaving(false);
+    }
+  }
 
-  const allowed_edit = (status) =>{
+  const allowed_edit = (status) => {
     const user = localStorage.getItem('user')
 
-        if (user) {
-            
-            const parsed = JSON.parse(user);
-            return true
-            if (parsed?.role?.name == 'Admin') {
-              return true
-            }
-            else if(status=='open'){
-              return true
-            }
-            else if(status=='verified' && ['Team Lead','Manager','Verifier','Root Manager','Phlebo','Super Manager'].includes(parsed?.role?.name)){
-              return true
-            }
-            else if(status=='sample_collected' && ['Verifier','Root Manager','Phlebo','Super Manager'].includes(parsed?.role?.name)){
-              return true
-            }
-            else if(status=='report_uploaded' && ['Verifier','Root Manager','Dietitian','Health Manager','Super Manager'].includes(parsed?.role?.name)){
-              return true
-            }
-            else if(status=='completed' && ['Verifier','Root Manager','Dietitian','Health Manager','Super Manager'].includes(parsed?.role?.name)){
-              return true
-            }
-            else if(status=='cancelled' && ['Verifier','Root Manager','Dietitian','Health Manager','Super Manager'].includes(parsed?.role?.name)){
-              return true
-            }
-            else{
-              return false
-            } 
-        }
+    if (user) {
+
+      const parsed = JSON.parse(user);
+      return true
+      if (parsed?.role?.name == 'Admin') {
+        return true
+      }
+      else if (status == 'open') {
+        return true
+      }
+      else if (status == 'verified' && ['Team Lead', 'Manager', 'Verifier', 'Root Manager', 'Phlebo', 'Super Manager'].includes(parsed?.role?.name)) {
+        return true
+      }
+      else if (status == 'sample_collected' && ['Verifier', 'Root Manager', 'Phlebo', 'Super Manager'].includes(parsed?.role?.name)) {
+        return true
+      }
+      else if (status == 'report_uploaded' && ['Verifier', 'Root Manager', 'Dietitian', 'Health Manager', 'Super Manager'].includes(parsed?.role?.name)) {
+        return true
+      }
+      else if (status == 'completed' && ['Verifier', 'Root Manager', 'Dietitian', 'Health Manager', 'Super Manager'].includes(parsed?.role?.name)) {
+        return true
+      }
+      else if (status == 'cancelled' && ['Verifier', 'Root Manager', 'Dietitian', 'Health Manager', 'Super Manager'].includes(parsed?.role?.name)) {
+        return true
+      }
+      else {
         return false
+      }
+    }
+    return false
 
   }
 
@@ -218,10 +232,18 @@ const BookingsPage: React.FC = () => {
       label: "Actions",
       render: (row: any) => (
         <div className="flex items-center gap-2">
-          <button 
-          className={`p-1 rounded-md ${ allowed_edit(row.status) ? "hover:bg-gray-100 cursor-pointer" : "opacity-40 cursor-not-allowed"
+          <button
+            className={`p-1 rounded-md ${allowed_edit(row.status) ? "hover:bg-gray-100 cursor-pointer" : "opacity-40 cursor-not-allowed"
               }`} title="Edit"
-          disabled={!allowed_edit(row.status)}
+            disabled={!allowed_edit(row.status)}
+            onClick={() => handleMakeCall(row.id)}
+          >
+            <PhoneOutgoing className="w-5 h-5 text-gray-600 hover:text-primary " />
+          </button>
+          <button
+            className={`p-1 rounded-md ${allowed_edit(row.status) ? "hover:bg-gray-100 cursor-pointer" : "opacity-40 cursor-not-allowed"
+              }`} title="Edit"
+            disabled={!allowed_edit(row.status)}
             onClick={() =>
               setDrawerEdit({ open: true, id: row.id, row })
             }

@@ -6,7 +6,8 @@ import DataTable from "../components/DataTable";
 import FormDrawer from "../components/FormDrawer";
 import AddressDrawer from "../components/drawer/AddressDrawer";
 import type { FormField } from "../components/FormDrawer";
-import { Pencil } from "lucide-react";
+import { Pencil, PhoneOutgoing } from "lucide-react";
+import { customerApi } from "../api/axios";
 
 const Customers: React.FC = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -151,6 +152,22 @@ const Customers: React.FC = () => {
     setAddressDrawerOpen(true);
   };
 
+  const handleMakeCall = async (id) => {
+    try {
+      const res = await customerApi.post("/calls/connect/", {
+        "call_type": "customer",
+        "user_id": id
+      })
+      alert("Call initiated");
+    } catch (err: any) {
+      console.error(err);
+      alert("Failed to initiat call " + String(err.serverMessage));
+    } finally {
+      //setSaving(false);
+    }
+  }
+
+
   // ------------------------------
   // Customer Columns
   // ------------------------------
@@ -180,44 +197,55 @@ const Customers: React.FC = () => {
       key: "actions",
       label: "Actions",
       render: (row: any) => (
-        <button
-          className="p-1 hover:bg-gray-100 rounded"
-          onClick={() =>
-            openEditDrawer(
-              "Edit Customer",
-              `/crm/users/${row.id}/`,
-              row,
-              [
-                { name: "first_name", label: "First Name", type: "text", required: true },
-                { name: "last_name", label: "Last Name", type: "text" },
-                { name: "email", label: "Email", type: "text" },
-                {
-                  name: "mobile",
-                  label: "Mobile Number",
-                  type: "text",
-                  required: true,
-                  placeholder: "10 digit mobile number",
-                  numericOnly: true,
-                  minLength: 10,
-                  maxLength: 10,
-                  pattern: /^[0-9]{10}$/,
-                  patternMessage: "Mobile number must be exactly 10 digits",
-                  helper: "Enter a valid 10 digit Indian mobile number",
-                },
-                {
-                  name: "gender", label: "Gender", type: "select", options: [
-                    { label: "Male", value: "Male" },
-                    { label: "Female", value: "Female" },
-                    { label: "Other", value: "Other" },
-                  ]
-                },
-                { name: "age", label: "Age", type: "number" },
-              ]
-            )
-          }
-        >
-          <Pencil className="w-5 h-5 text-gray-600" />
-        </button>
+        <div className="flex items-center gap-2">
+          <button
+            className={`p-1 rounded-md ${true ? "hover:bg-gray-100 cursor-pointer" : "opacity-40 cursor-not-allowed"
+              }`} title="Edit"
+            disabled={!true}
+            onClick={() => handleMakeCall(row.id)}
+          >
+            <PhoneOutgoing className="w-5 h-5 text-gray-600 hover:text-primary " />
+          </button>
+
+          <button
+            className="p-1 hover:bg-gray-100 rounded"
+            onClick={() =>
+              openEditDrawer(
+                "Edit Customer",
+                `/crm/users/${row.id}/`,
+                row,
+                [
+                  { name: "first_name", label: "First Name", type: "text", required: true },
+                  { name: "last_name", label: "Last Name", type: "text" },
+                  { name: "email", label: "Email", type: "text" },
+                  {
+                    name: "mobile",
+                    label: "Mobile Number",
+                    type: "text",
+                    required: true,
+                    placeholder: "10 digit mobile number",
+                    numericOnly: true,
+                    minLength: 10,
+                    maxLength: 10,
+                    pattern: /^[0-9]{10}$/,
+                    patternMessage: "Mobile number must be exactly 10 digits",
+                    helper: "Enter a valid 10 digit Indian mobile number",
+                  },
+                  {
+                    name: "gender", label: "Gender", type: "select", options: [
+                      { label: "Male", value: "Male" },
+                      { label: "Female", value: "Female" },
+                      { label: "Other", value: "Other" },
+                    ]
+                  },
+                  { name: "age", label: "Age", type: "number" },
+                ]
+              )
+            }
+          >
+            <Pencil className="w-5 h-5 text-gray-600" />
+          </button>
+        </div>
       ),
     },
   ];
