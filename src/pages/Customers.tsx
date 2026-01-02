@@ -174,6 +174,21 @@ const Customers: React.FC = () => {
   const customerColumns = [
     { key: "id", label: "ID", sort_allowed: true },
     {
+      key: "created_at",
+      label: "Created",
+      render: (row: any) =>
+        row.created_at
+          ? new Date(row.created_at).toLocaleString("en-IN", {
+            year: "numeric",
+            month: "2-digit",
+            day: "2-digit",
+            hour: "2-digit",
+            minute: "2-digit",
+            hour12: true,
+          })
+          : "—",
+    },
+    {
       key: "full_name",
       label: "Customer",
       render: (row: any) => `${row.first_name || ""} ${row.last_name || ""}`,
