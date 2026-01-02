@@ -35,7 +35,7 @@ export type DataTableProps<T = any> = {
   showDateRange?: boolean;
   dateFromParam?: string;
   dateToParam?: string;
-
+  scroll_y?:boolean;
   header?: string;
   subheader?: string | null;
   apiUrl: string; // e.g. "bookings/"
@@ -64,6 +64,7 @@ export default function DataTable<T = any>({
 
   header,
   subheader,
+  scroll_y,
   apiUrl,
   columns,
   showSearch = true,
@@ -425,7 +426,7 @@ export default function DataTable<T = any>({
 
       {/* Table container */}
       <div className="bg-white border rounded-md shadow-sm overflow-x-auto">
-        <table className="min-w-full divide-y divide-gray-100">
+        <table className={`${scroll_y ? "min-w-max" :"min-w-full"} divide-y divide-gray-100`}>
           <thead className="bg-gray-50">
             <tr>
               {columns.map((col) => {

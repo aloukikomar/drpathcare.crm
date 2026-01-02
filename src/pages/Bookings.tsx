@@ -112,11 +112,25 @@ const BookingsPage: React.FC = () => {
       width: "100px",
     },
     {
+      key: "created_by_str",
+      label: "Created by",
+      sort_allowed: true,
+      render: (row: any) => row.created_by_str || "—",
+      width: "200px",
+    },
+    {
       key: "user_str",
       label: "User",
       sort_allowed: true,
       render: (row: any) => row.user_str || "—",
-      width: "100px",
+      width: "200px",
+    },
+    {
+      key: "location_str",
+      label: "Location",
+      sort_allowed: true,
+      render: (row: any) => row.location_str || "—",
+      width: "280px",
     },
     {
       key: "status",
@@ -225,7 +239,7 @@ const BookingsPage: React.FC = () => {
       label: "Time Slot",
       sort_allowed: true,
       render: (row: any) => row.scheduled_date + '\n | \n' + row.scheduled_time_slot,
-      width: "250px",
+      width: "280px",
     },
     {
       key: "actions",
@@ -307,6 +321,7 @@ const BookingsPage: React.FC = () => {
             subheader="Create and Update customer booking"
             apiUrl="bookings-list/"
             columns={columns}
+            scroll_y
             showSearch
             showFilter
             showAdd
