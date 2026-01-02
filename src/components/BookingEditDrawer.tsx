@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { X } from "lucide-react";
+import { User2, X } from "lucide-react";
 import { customerApi } from "../api/axios";
 import { useNavigate } from "react-router-dom";
 
@@ -12,6 +12,7 @@ interface BookingEditDrawerProps {
     refId: string | null;
     currentStatus?: string;
     onSuccess?: () => void;
+    agentList?: any[];
 }
 
 const ACTIONS = [
@@ -30,6 +31,7 @@ export default function BookingEditDrawer({
     refId,
     currentStatus,
     onSuccess,
+    agentList,
 }: BookingEditDrawerProps) {
     const [actionType, setActionType] = useState("");
     const [remarks, setRemarks] = useState("");
@@ -164,7 +166,7 @@ export default function BookingEditDrawer({
             if (parsed?.role?.name == 'Admin') {
                 return true
             }
-            else if (['open','verified'].includes(String(currentStatus))){
+            else if (['open', 'verified'].includes(String(currentStatus))) {
                 return true
             }
             else false
@@ -195,15 +197,15 @@ export default function BookingEditDrawer({
             ]
             else if (currentStatus == 'verified') {
                 if (parsed?.role?.name == 'Team Lead' || parsed?.role?.name == 'Agent') return [
-                        { value: "add_remark", label: "Add Remark" },
-                    ]
+                    { value: "add_remark", label: "Add Remark" },
+                ]
                 return [
-                        { value: "update_status", label: "Update Status" },
-                        { value: "update_agent", label: "Update Agent" },
-                        { value: "add_remark", label: "Add Remark" },
-                    ]
-                    }
-                
+                    { value: "update_status", label: "Update Status" },
+                    { value: "update_agent", label: "Update Agent" },
+                    { value: "add_remark", label: "Add Remark" },
+                ]
+            }
+
             else if (currentStatus == 'sample_collected') return [
                 { value: "update_status", label: "Update Status" },
                 { value: "update_agent", label: "Update Agent" },
@@ -308,7 +310,7 @@ export default function BookingEditDrawer({
                     <button
                         disabled={!allowed_fulledit()}
                         onClick={() => navigate(`/bookings/${bookingId}/edit`)}
-                        className={`px-4 py-2 rounded-md ${allowed_fulledit()?"bg-[#635bff]":"bg-gray-300"} text-white text-sm font-medium shadow hover:opacity-90`}
+                        className={`px-4 py-2 rounded-md ${allowed_fulledit() ? "bg-[#635bff]" : "bg-gray-300"} text-white text-sm font-medium shadow hover:opacity-90`}
                     >
                         Update Full Details
                     </button>
@@ -535,6 +537,51 @@ export default function BookingEditDrawer({
                     </div>
 
                     {error && <p className="text-red-600 text-sm mt-2">{error}</p>}
+                </div>
+                {/* Agent tags*/}
+                <div className="p-3 bg-white flex justify-top gap-2">
+                    Assigned Agents
+                </div>
+                <div className="p-2 border-t bg-white flex justify-top gap-2">
+
+                    <div className="p-1 bg-white flex justify-end gap-2">
+                        {agentList?.map((item) => (
+                            <div
+                                className="
+                            flex items-center gap-2 
+                            bg-primary/10 border border-primary/30 
+                            px-3 py-1.5 rounded-full 
+                            text-sm shadow-sm
+                          "
+                            >
+                                {/* Avatar */}
+                                {/* <div
+                            className="
+                              w-6 h-6 rounded-full 
+                              bg-primary/20 text-primary 
+                              flex items-center justify-center 
+                              text-xs font-bold
+                            "
+                          >
+                            <User2 />
+                          </div> */}
+
+                                {/* Name */}
+                                <span className="font-medium text-gray-800">
+                                    {item}
+                                </span>
+
+                                {/* Remove
+                          <button
+                            onClick={onRemove}
+                            className="text-gray-500 hover:text-red-600 transition-colors"
+                          >
+                            <X className="w-4 h-4" />
+                          </button> */}
+                            </div>
+                        ))}
+                    </div>
+
                 </div>
 
                 {/* FOOTER */}

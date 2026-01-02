@@ -401,6 +401,7 @@ const BookingsPage: React.FC = () => {
       {/* ------------------------- EditBooking DRAWER ------------------------- */}
       <BookingEditDrawer
         open={drawerEdit.open}
+        agentList={drawerEdit.row?.view_stack}
         refId={drawerEdit.row?.ref_id}
         onClose={() => setDrawerEdit({ open: false, id: null, row: null })}
         bookingId={drawerEdit.id}
