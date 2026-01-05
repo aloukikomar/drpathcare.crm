@@ -20,6 +20,7 @@ export const PERMISSIONS = {
   NOTIFICATIONS: "notifications",
 
   SETTINGS: "settings",
+  OLD_LEADS: "old_leads",
 } as const;
 
 /**

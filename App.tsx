@@ -19,6 +19,7 @@ import ContentManagement from "./src/pages/ContentManagement";
 import Settings from "./src/pages/Settings";
 import NotFound from "./src/pages/NotFound";
 import Incentives from "./src/pages/Incentives"
+import OldLeads from "./src/pages/OldLeads"
 
 import ProtectedRoute from "./src/components/ProtectedRoute";
 import { PERMISSIONS } from "./src/utils/permissions";
@@ -126,6 +127,14 @@ const App: React.FC = () => {
               element={
                 <ProtectedRoute permission={PERMISSIONS.NOTIFICATIONS}>
                   <Notifications />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/old-leads"
+              element={
+                <ProtectedRoute permission={PERMISSIONS.OLD_LEADS}>
+                  <OldLeads />
                 </ProtectedRoute>
               }
             />

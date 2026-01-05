@@ -35,7 +35,7 @@ export type DataTableProps<T = any> = {
   showDateRange?: boolean;
   dateFromParam?: string;
   dateToParam?: string;
-  scroll_y?:boolean;
+  scroll_y?: boolean;
   header?: string;
   subheader?: string | null;
   apiUrl: string; // e.g. "bookings/"
@@ -313,7 +313,7 @@ export default function DataTable<T = any>({
                         className={`
                           fixed inset-x-2 bottom-2 z-50
                           sm:absolute sm:right-0 sm:top-full sm:mt-2 sm:inset-x-auto
-                          bg-white shadow-xl border rounded-lg ${!isMobile?"":"[&_.rdrDefinedRangesWrapper]:hidden"}
+                          bg-white shadow-xl border rounded-lg ${!isMobile ? "" : "[&_.rdrDefinedRangesWrapper]:hidden"}
                         `}
                       >
                         <DateRangePicker
@@ -426,7 +426,10 @@ export default function DataTable<T = any>({
 
       {/* Table container */}
       <div className="bg-white border rounded-md shadow-sm overflow-x-auto">
-        <table className={`${scroll_y ? "min-w-max" :"min-w-full"} divide-y divide-gray-100`}>
+        <table
+          key={`${page}-${pageSize}`}
+          className={`${scroll_y ? "min-w-max" : "min-w-full"} divide-y divide-gray-100`}
+        >
           <thead className="bg-gray-50">
             <tr>
               {columns.map((col) => {

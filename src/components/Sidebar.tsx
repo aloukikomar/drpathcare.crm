@@ -44,6 +44,7 @@ const menuItems: MenuItem[] = [
   { icon: MessageSquare, label: "Enquiry", path: "/enquiry" },
   { icon: IndianRupee, label: "Incentives", path: "/incentives" },
   { icon: Users, label: "Customers", path: "/customers", permission: "customers" },
+  { icon: Users, label: "Old Leads", path: "/old-leads", permission: "old_leads" },
   { icon: TestTube, label: "Lab Products", path: "/lab-products", permission: "lab_products" },
   { icon: Bell, label: "Notifications", path: "/notifications", permission: "notifications" },
   { icon: FileText, label: "Content Management", path: "/content-management", permission: "content_management" },
