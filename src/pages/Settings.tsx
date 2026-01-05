@@ -164,6 +164,7 @@ export default function Settings() {
                       gender: "Male",
                       age: null,
                       role: "",
+                      mpin:"",
                       user_code: "",     // ✅ ADD
                       parent: null,      // ✅ ADD
                     });
@@ -313,6 +314,23 @@ export default function Settings() {
                       setSelectedUser({
                         ...selectedUser,
                         age: e.target.value ? Number(e.target.value) : null,
+                      })
+                    }
+                  />
+                </div>
+
+                {/* MPIN */}
+                <div>
+                  <label className="text-sm text-gray-600 mb-1 block">MPIN</label>
+                  <input
+                    type="number"
+                    min={0}
+                    className="w-full border px-3 py-2 rounded-lg"
+                    value={selectedUser.mpin ?? ""}
+                    onChange={(e) =>
+                      setSelectedUser({
+                        ...selectedUser,
+                        mpin: e.target.value ? Number(e.target.value) : null,
                       })
                     }
                   />

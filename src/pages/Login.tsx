@@ -2,21 +2,26 @@ import React, { useState, useEffect } from "react";
 import { globalApi } from "../api/axios";
 import { useNavigate } from "react-router-dom";
 
+type Step = "mobile" | "otp" | "mpin";
+
 export default function LoginPage() {
   const [mobile, setMobile] = useState("");
   const [otp, setOtp] = useState("");
-  const [step, setStep] = useState<"mobile" | "otp">("mobile");
+  const [mpin, setMpin] = useState("");
+
+  const [step, setStep] = useState<Step>("mobile");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [timer, setTimer] = useState(0);
 
   const navigate = useNavigate();
 
-  // Validate like old CRM
+  /* ---------------- VALIDATION ---------------- */
   const validateMobile = (v: string) => /^[0-9]{10}$/.test(v);
   const validateOtp = (v: string) => /^[0-9]{4}$/.test(v);
+  const validateMpin = (v: string) => /^[0-9]{6}$/.test(v);
 
-  // Timer effect (same as old CRM)
+  /* ---------------- OTP TIMER ---------------- */
   useEffect(() => {
     if (step === "otp" && timer > 0) {
       const id = setInterval(() => setTimer((t) => Math.max(t - 1, 0)), 1000);
@@ -24,7 +29,7 @@ export default function LoginPage() {
     }
   }, [step, timer]);
 
-  // ------------------ SEND OTP ------------------
+  /* ---------------- SEND OTP ---------------- */
   const handleSendOtp = async (e?: React.FormEvent) => {
     e?.preventDefault();
 
@@ -48,7 +53,7 @@ export default function LoginPage() {
     }
   };
 
-  // ------------------ VERIFY OTP ------------------
+  /* ---------------- VERIFY OTP ---------------- */
   const handleVerifyOtp = async (e?: React.FormEvent) => {
     e?.preventDefault();
 
@@ -66,19 +71,49 @@ export default function LoginPage() {
         otp,
       });
 
-      // Store tokens & user like your axios expects
       localStorage.setItem("access", data.access);
       localStorage.setItem("refresh", data.refresh);
       localStorage.setItem("user", JSON.stringify(data.user));
 
       navigate("/dashboard");
     } catch (err: any) {
-      setError(err.response.data.error || "Invalid OTP");
+      setError(err.response?.data?.error || "Invalid OTP");
     } finally {
       setLoading(false);
     }
   };
 
+  /* ---------------- VERIFY MPIN ---------------- */
+  const handleVerifyMpin = async (e?: React.FormEvent) => {
+    e?.preventDefault();
+
+    if (!validateMpin(mpin)) {
+      setError("Please enter a valid 6-digit MPIN");
+      return;
+    }
+
+    try {
+      setLoading(true);
+      setError(null);
+
+      const data = await globalApi.post("auth/verify-mpin/", {
+        mobile,
+        mpin,
+      });
+
+      localStorage.setItem("access", data.access);
+      localStorage.setItem("refresh", data.refresh);
+      localStorage.setItem("user", JSON.stringify(data.user));
+
+      navigate("/dashboard");
+    } catch (err: any) {
+      setError(err.response?.data?.error || "Invalid MPIN");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  /* ================= UI ================= */
   return (
     <div
       className="min-h-screen flex items-center justify-center p-4"
@@ -87,13 +122,12 @@ export default function LoginPage() {
           "linear-gradient(rgba(50, 32, 248, 0.3), rgba(255,255,255,0.3)),url('/login-bg.jpg') no-repeat center/cover",
       }}
     >
-      {/* MAIN CARD – EXACT SIZE: width 400 / p=6 / radius 12px */}
       <div
         className="bg-white shadow-lg rounded-xl"
         style={{
           width: "400px",
-          padding: "24px", // MUI p=6
-          borderRadius: "12px", // MUI radius 3
+          padding: "24px",
+          borderRadius: "12px",
         }}
       >
         {/* LOGO */}
@@ -101,19 +135,14 @@ export default function LoginPage() {
           src="/logo1.png"
           alt="Logo"
           className="mx-auto"
-          style={{
-            width: "300px",
-            height: "100px",
-            objectFit: "contain",
-          }}
+          style={{ width: "300px", height: "100px", objectFit: "contain" }}
         />
 
-        {/* TITLE */}
         <p className="text-center text-xl font-medium mt-6 mb-6">
           Sign in to CRM
         </p>
 
-        {/* STEP 1 — MOBILE */}
+        {/* ========== MOBILE STEP ========== */}
         {step === "mobile" && (
           <form onSubmit={handleSendOtp}>
             <div className="mb-4">
@@ -122,7 +151,7 @@ export default function LoginPage() {
               </label>
               <input
                 type="text"
-                className="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-[#635bff] outline-none text-center"
+                className="w-full border rounded-md px-3 py-2 text-center"
                 value={mobile}
                 onChange={(e) =>
                   setMobile(e.target.value.replace(/\D/g, "").slice(0, 10))
@@ -131,38 +160,42 @@ export default function LoginPage() {
               />
             </div>
 
-            <button
-              type="submit"
-              disabled={loading || !mobile}
-              className="w-full bg-[#635bff] text-white py-2 rounded-md font-medium hover:bg-[#564ef5] disabled:opacity-50"
-            >
-              {loading ? "Sending..." : "Get OTP"}
-            </button>
-
-            <p className="text-center text-sm text-gray-500 mt-4">
-              For any issue, contact support at{" "}
-              <a
-                href="mailto:info@drpathcare.com"
-                className="font-semibold underline text-primary"
+            {/* TWO BUTTONS SIDE BY SIDE */}
+            <div className="flex gap-3">
+              <button
+                type="submit"
+                disabled={loading}
+                className="w-full bg-[#635bff] text-white py-2 rounded-md font-medium"
               >
-                info@drpathcare.com
-              </a>
-            </p>
+                {loading ? "Sending..." : "Get OTP"}
+              </button>
+
+              <button
+                type="button"
+                onClick={() => {
+                  setError(null);
+                  setStep("mpin");
+                }}
+                className="w-full border py-2 rounded-md font-medium"
+              >
+                Login with MPIN
+              </button>
+            </div>
           </form>
         )}
 
-        {/* STEP 2 — OTP */}
+        {/* ========== OTP STEP ========== */}
         {step === "otp" && (
           <form onSubmit={handleVerifyOtp}>
-            <p className="text-center text-sm text-gray-600 mb-3">
-              SMS sent to number <strong>{mobile}</strong>
+            <p className="text-center text-sm mb-3">
+              SMS sent to <strong>{mobile}</strong>
             </p>
 
             <div className="mb-4">
               <label className="text-sm font-medium block mb-1">Enter OTP</label>
               <input
                 type="text"
-                className="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-[#635bff] outline-none text-center"
+                className="w-full border rounded-md px-3 py-2 text-center"
                 value={otp}
                 onChange={(e) =>
                   setOtp(e.target.value.replace(/\D/g, "").slice(0, 4))
@@ -171,53 +204,79 @@ export default function LoginPage() {
               />
             </div>
 
-            {/* BUTTONS */}
             <div className="flex gap-3 mb-2">
               <button
                 type="submit"
-                className="w-full bg-[#635bff] text-white py-2 rounded-md font-medium hover:bg-[#564ef5]"
-                disabled={loading}
+                className="w-full bg-[#635bff] text-white py-2 rounded-md"
               >
-                {loading ? "Verifying..." : "Verify OTP"}
+                Verify OTP
               </button>
 
               <button
                 type="button"
                 onClick={() => setStep("mobile")}
-                className="w-full border border-gray-300 py-2 rounded-md font-medium hover:bg-gray-50"
+                className="w-full border py-2 rounded-md"
               >
                 Back
               </button>
             </div>
 
-            {/* TIMER / RESEND */}
             {timer > 0 ? (
-              <p className="text-center text-sm text-gray-600 mt-2">
+              <p className="text-center text-sm">
                 Resend OTP in {timer}s
               </p>
             ) : (
               <button
                 type="button"
                 onClick={handleSendOtp}
-                className="w-full text-[#635bff] text-sm font-medium mt-1 hover:underline"
+                className="w-full text-[#635bff] text-sm hover:underline"
               >
                 Resend OTP
               </button>
             )}
-
-            <p className="text-center text-sm text-gray-500 mt-4">
-              For any issue, contact support at{" "}
-              <a
-                href="mailto:info@drpathcare.com"
-                className="font-semibold underline text-primary"
-              >
-                info@drpathcare.com
-              </a>
-            </p>
           </form>
         )}
 
-        {/* ERROR */}
+        {/* ========== MPIN STEP ========== */}
+        {step === "mpin" && (
+          <form onSubmit={handleVerifyMpin}>
+            <p className="text-center text-sm mb-3">
+              Login with MPIN for <strong>{mobile}</strong>
+            </p>
+
+            <div className="mb-4">
+              <label className="text-sm font-medium block mb-1">Enter MPIN</label>
+              <input
+                type="password"
+                className="w-full border rounded-md px-3 py-2 text-center"
+                value={mpin}
+                onChange={(e) =>
+                  setMpin(e.target.value.replace(/\D/g, "").slice(0, 6))
+                }
+                required
+              />
+            </div>
+
+            <div className="flex gap-3">
+              <button
+                type="submit"
+                className="w-full bg-[#635bff] text-white py-2 rounded-md"
+              >
+                Login
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setStep("mobile")}
+                className="w-full border py-2 rounded-md"
+              >
+                Back
+              </button>
+            </div>
+          </form>
+        )}
+        <p className="text-center text-sm text-gray-500 mt-4"> For any issue, contact support at{" "} <a href="mailto:info@drpathcare.com" className="font-semibold underline text-primary" > info@drpathcare.com </a> </p>
+
         {error && (
           <p className="text-center text-red-500 mt-4 text-sm">{error}</p>
         )}
