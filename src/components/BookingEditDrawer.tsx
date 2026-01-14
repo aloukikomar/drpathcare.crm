@@ -51,6 +51,31 @@ export default function BookingEditDrawer({
     const [agentResults, setAgentResults] = useState<any[]>([]);
     const [selectedAgent, setSelectedAgent] = useState<any>(null);
     const [searchingAgent, setSearchingAgent] = useState(false);
+    const isSubmitDisabled =
+        loading ||
+        !actionType ||
+        !remarks.trim() ||
+        (actionType === "update_status" && !status) ||
+        (actionType === "update_agent" && !selectedAgent);
+    const resetDrawerState = () => {
+        setActionType("");
+        setRemarks("");
+        setStatus(currentStatus || "");
+        setPaymentMethod("");
+        setNewDate("");
+        setNewTime("");
+        setDocName("");
+        setDocType("other");
+        setFile(null);
+        setPaymentProof(null);
+
+        setAgentSearch("");
+        setAgentResults([]);
+        setSelectedAgent(null);
+
+        setError("");
+    };
+
     const navigate = useNavigate();
 
     useEffect(() => {
@@ -148,7 +173,7 @@ export default function BookingEditDrawer({
 
                 await customerApi.patch(`/bookings/${bookingId}/`, payload);
             }
-
+            resetDrawerState();
             onSuccess?.();
             onClose();
         } catch (err: any) {
@@ -196,7 +221,27 @@ export default function BookingEditDrawer({
                 { value: "add_remark", label: "Add Remark" },
             ]
             else if (currentStatus == 'verified') {
-                if (parsed?.role?.name == 'Team Lead' || parsed?.role?.name == 'Agent') return [
+                if (!['Verifier'].includes(parsed?.role?.name)) return [
+                    { value: "add_remark", label: "Add Remark" },
+                ]
+                return [
+                    { value: "update_status", label: "Update Status" },
+                    { value: "update_agent", label: "Update Agent" },
+                    { value: "add_remark", label: "Add Remark" },
+                ]
+            }
+            else if (currentStatus == 'root_manager') {
+                if (!['Root Manager'].includes(parsed?.role?.name)) return [
+                    { value: "add_remark", label: "Add Remark" },
+                ]
+                return [
+                    { value: "update_status", label: "Update Status" },
+                    { value: "update_agent", label: "Update Agent" },
+                    { value: "add_remark", label: "Add Remark" },
+                ]
+            }
+            else if (currentStatus == 'phlebo') {
+                if (!['Root Manager', 'Phlebo'].includes(parsed?.role?.name)) return [
                     { value: "add_remark", label: "Add Remark" },
                 ]
                 return [
@@ -206,22 +251,66 @@ export default function BookingEditDrawer({
                 ]
             }
 
-            else if (currentStatus == 'sample_collected') return [
-                { value: "update_status", label: "Update Status" },
-                { value: "update_agent", label: "Update Agent" },
-                { value: "update_payment", label: "Update Payment Status" },
-                { value: "upload_document", label: "Upload Document" },
-                { value: "add_remark", label: "Add Remark" },
-            ]
-            else if (currentStatus == 'report_uploaded') return [
-                { value: "update_status", label: "Update Status" },
-                { value: "update_agent", label: "Update Agent" },
-                { value: "upload_document", label: "Upload Document" },
-                { value: "add_remark", label: "Add Remark" },
-            ]
+            else if (currentStatus == 'sample_collected') {
+                if (!['Phlebo', 'Root Manager', 'Verifier','Report Uploader'].includes(parsed?.role?.name)) return [
+                    { value: "add_remark", label: "Add Remark" },
+                ]
+                return [
+                    // { value: "update_status", label: "Update Status" },
+                    // { value: "update_agent", label: "Update Agent" },
+                    { value: "update_payment", label: "Update Payment Status" },
+                    // { value: "upload_document", label: "Upload Document" },
+                    { value: "add_remark", label: "Add Remark" },
+                ]
+            }
+            else if (currentStatus == 'payment_collected') {
+                if (!['Report Uploader'].includes(parsed?.role?.name)) return [
+                    { value: "add_remark", label: "Add Remark" },
+                ]
+                return [
+                    { value: "update_status", label: "Update Status" },
+                    // { value: "update_agent", label: "Update Agent" },
+                    // { value: "update_payment", label: "Update Payment Status" },
+                    { value: "upload_document", label: "Upload Document" },
+                    { value: "add_remark", label: "Add Remark" },
+                ]
+            }
+            else if (currentStatus == 'report_uploaded') {
+                if (!['Report Uploader'].includes(parsed?.role?.name)) return [
+                    { value: "add_remark", label: "Add Remark" },
+                ]
+                return [
+                    // { value: "update_status", label: "Update Status" },
+                    { value: "update_agent", label: "Update Agent" },
+                    //{ value: "upload_document", label: "Upload Document" },
+                    { value: "add_remark", label: "Add Remark" },
+                ]
+            }
+            else if (currentStatus == 'health_manager') {
+                if (!['Health Manager'].includes(parsed?.role?.name)) return [
+                    { value: "add_remark", label: "Add Remark" },
+                ]
+                return [
+                    // { value: "update_status", label: "Update Status" },
+                    { value: "update_agent", label: "Update Agent" },
+                    //{ value: "upload_document", label: "Upload Document" },
+                    { value: "add_remark", label: "Add Remark" },
+                ]
+            }
+            else if (currentStatus == 'dietitian') {
+                if (!['Dietitian'].includes(parsed?.role?.name)) return [
+                    { value: "add_remark", label: "Add Remark" },
+                ]
+                return [
+                    { value: "update_status", label: "Update Status" },
+                    // { value: "update_agent", label: "Update Agent" },
+                    { value: "upload_document", label: "Upload Document" },
+                    { value: "add_remark", label: "Add Remark" },
+                ]
+            }
             else if (currentStatus == 'completed') return [
-                { value: "update_agent", label: "Update Agent" },
-                { value: "upload_document", label: "Upload Document" },
+                // { value: "update_agent", label: "Update Agent" },
+                // { value: "upload_document", label: "Upload Document" },
                 { value: "add_remark", label: "Add Remark" },
             ]
             else if (currentStatus == 'cancelled') return [
@@ -241,29 +330,50 @@ export default function BookingEditDrawer({
                 return [
                     { value: "open", label: "Open" },
                     { value: "verified", label: "Verified" },
+                    // { value: "operations", label: "Operations" },
+                    // { value: "phlebo", label: "Phlebo" },
                     { value: "sample_collected", label: "Sample Collected" },
                     { value: "report_uploaded", label: "Report Uploaded" },
                     { value: "completed", label: "Completed" },
                     { value: "cancelled", label: "Cancelled" },
                 ]
             }
-            else if (currentStatus == 'open') return [
-                { value: "verified", label: "Verified" },
-                { value: "cancelled", label: "Cancelled" },
-            ]
+            else if (currentStatus == 'open') {
+                if (parsed?.role?.name == 'Verifier') return [
+                    { value: "verified", label: "Verified" },
+                    { value: "cancelled", label: "Cancelled" },
+                ]
+
+                return [
+                    // { value: "verified", label: "Verified" },
+                    { value: "cancelled", label: "Cancelled" },
+                ]
+            }
             else if (currentStatus == 'verified') return [
                 { value: "open", label: "Open" },
+                // { value: "sample_collected", label: "Sample Collected" },
+                { value: "cancelled", label: "Cancelled" },
+            ]
+            else if (parsed?.role?.name == 'Phlebo' && currentStatus == 'phlebo') return [
                 { value: "sample_collected", label: "Sample Collected" },
                 { value: "cancelled", label: "Cancelled" },
             ]
-            else if (currentStatus == 'sample_collected') return [
-                { value: "report_uploaded", label: "Report Uploaded" },
+            else if (parsed?.role?.name == 'Phlebo' && currentStatus == 'sample_collected') return [
                 { value: "completed", label: "Completed" },
                 { value: "cancelled", label: "Cancelled" },
+            ]
+            else if (currentStatus == 'payment_collected') return [
+                { value: "report_uploaded", label: "Report Uploaded" },
+                // { value: "completed", label: "Completed" },
+                // { value: "cancelled", label: "Cancelled" },
             ]
             else if (currentStatus == 'report_uploaded') return [
                 { value: "completed", label: "Completed" },
                 { value: "cancelled", label: "Cancelled" },
+            ]
+            else if (currentStatus == 'dietitian') return [
+                { value: "completed", label: "Completed" },
+                // { value: "cancelled", label: "Cancelled" },
             ]
             else if (currentStatus == 'cancelled') return [
                 { value: "open", label: "Open" }
@@ -306,7 +416,7 @@ export default function BookingEditDrawer({
                 </div>
 
                 {/* Update Full Details Button */}
-                <div className="p-4 border-b">
+                {/* <div className="p-4 border-b">
                     <button
                         disabled={!allowed_fulledit()}
                         onClick={() => navigate(`/bookings/${bookingId}/edit`)}
@@ -314,7 +424,7 @@ export default function BookingEditDrawer({
                     >
                         Update Full Details
                     </button>
-                </div>
+                </div> */}
 
                 {/* CONTENT */}
                 <div className="flex-1 overflow-y-auto p-4">
@@ -475,10 +585,11 @@ export default function BookingEditDrawer({
                             >
                                 <option value="">— Select —</option>
                                 <option value="cash">Cash</option>
+                                <option value="upi">UPI</option>
                                 <option value="online">Online</option>
                             </select>
 
-                            {paymentMethod === "cash" && (
+                            {(paymentMethod === "cash" || paymentMethod === "upi") && (
                                 <div className="mt-3">
                                     <label className="block text-sm font-medium mb-1">Upload Proof</label>
                                     <input
@@ -596,8 +707,8 @@ export default function BookingEditDrawer({
 
                     <button
                         onClick={handleSubmit}
-                        disabled={loading}
-                        className="px-4 py-2 rounded bg-[#635bff] text-white text-sm"
+                        disabled={isSubmitDisabled}
+                        className="px-4 py-2 rounded bg-[#635bff] text-white text-sm disabled:opacity-50"
                     >
                         {loading ? "Saving…" : "Update"}
                     </button>

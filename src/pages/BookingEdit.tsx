@@ -17,20 +17,31 @@ import type { ItemRow } from "./BookingCreate"; // Reuse interface
 import { Home, TestTube2, ClipboardCheck } from "lucide-react";
 import FormDrawer from "../components/FormDrawer";
 
+const ALL_TABS = [
 
-const TABS = [
+  {
+    index:0,
+    label: "Customer Details",
+    icon: <Home className="w-5 h-5" />,
+  },
+  {
+    index:1,
+    label: "Booking Details",
+    icon: <TestTube2 className="w-5 h-5" />,
+  },
     {
-        label: "Customer Details",
-        icon: <Home className="w-5 h-5" />,
-    },
+    index:2,
+    label: "Review & Confirm",
+    icon: <ClipboardCheck className="w-5 h-5" />,
+  },
+];
+
+const B_TABS = [
     {
-        label: "Booking Details",
-        icon: <TestTube2 className="w-5 h-5" />,
-    },
-    {
-        label: "Review & Confirm",
-        icon: <ClipboardCheck className="w-5 h-5" />,
-    },
+    index:2,
+    label: "Review & Confirm",
+    icon: <ClipboardCheck className="w-5 h-5" />,
+  },
 ];
 
 
@@ -69,6 +80,14 @@ const BookingEdit: React.FC = () => {
 
     const [openPatientDrawer, setOpenPatientDrawer] = useState(false)
     const [refreshKey, setRefreshKey] = useState(0)
+    const [tabs,setTabs] = useState(ALL_TABS)
+
+    const visibleTabs = (status) => {
+        console.log(status,"---")
+        if (!["sample_collected","payment_collected","report_uploaded","health_manager","dietitian","completed","cancelled"].includes(status)) return ALL_TABS;
+        setActiveTab(2)
+        return B_TABS;
+    };
 
     // ================================
     // LOAD BOOKING DETAILS
@@ -118,6 +137,7 @@ const BookingEdit: React.FC = () => {
 
                 setAdminDiscount(Number(data.admin_discount || 0));
                 setCouponDiscount(Number(data.coupon_discount || 0));
+                setTabs(visibleTabs(data.status))
 
             } catch (err) {
                 console.error(err);
@@ -232,7 +252,7 @@ const BookingEdit: React.FC = () => {
     };
 
 
-    const goNext = () => setActiveTab((t) => Math.min(t + 1, TABS.length - 1));
+    const goNext = () => setActiveTab((t) => Math.min(t + 1, ALL_TABS.length - 1));
     const goBack = () => setActiveTab((t) => Math.max(t - 1, 0));
 
     if (!originalBooking) {
@@ -253,13 +273,13 @@ const BookingEdit: React.FC = () => {
                 <main className="flex-1 overflow-y-auto p-4 lg:p-6">
                     {/* TABS */}
                     <div className="mb-6 flex flex-wrap gap-2">
-                        {TABS.map((tab, index) => {
-                            const isActive = activeTab === index;
+                        {tabs.map((tab, index) => {
+                            const isActive = activeTab === tab.index;
 
                             return (
                                 <button
                                     key={index}
-                                    onClick={() => setActiveTab(index)}
+                                    onClick={() => setActiveTab(tab.index)}
                                     className={`
                                                 flex items-center justify-center gap-2 
                                                 px-4 py-2 rounded-lg text-sm font-medium flex-1 sm:flex-none
@@ -324,6 +344,7 @@ const BookingEdit: React.FC = () => {
                                 totalDiscount={totalDiscount}
                                 finalAmount={finalAmount}
                                 onBack={goBack}
+                                originalBooking={originalBooking}
                                 onSubmit={() => setDrawerChanges(true)}
                             />
                         )}

@@ -60,6 +60,61 @@ const BookingsPage: React.FC = () => {
     }
   }
 
+
+  const rowStatusBg = (status?: string | null) => {
+    switch ((status || "").toLowerCase()) {
+
+      // 1️⃣ New / untouched
+      case "open":
+        return "bg-blue-50";
+
+      // 2️⃣ Verified
+      case "verified":
+        return "bg-yellow-50";
+
+      // 3️⃣ Root manager
+      case "root_manager":
+        return "bg-indigo-50";
+
+      // 4️⃣ Phlebo assigned
+      case "phlebo":
+        return "bg-amber-100";
+
+      // 5️⃣ Sample collected
+      case "sample_collected":
+        return "bg-cyan-50";
+
+      // 6️⃣ Payment collected
+      case "payment_collected":
+        return "bg-emerald-50";
+
+      // 7️⃣ Report uploaded
+      case "report_uploaded":
+        return "bg-violet-50";
+
+      // 8️⃣ Health manager
+      case "health_manager":
+        return "bg-teal-50";
+
+      // 9️⃣ Dietitian
+      case "dietitian":
+        return "bg-pink-50";
+
+      // ✅ Completed
+      case "completed":
+        return "bg-green-50";
+
+      // ❌ Terminal states
+      case "failed":
+      case "cancelled":
+        return "bg-red-50";
+
+      default:
+        return null;
+    }
+  };
+
+
   const allowed_edit = (status) => {
     const user = localStorage.getItem('user')
 
@@ -114,13 +169,13 @@ const BookingsPage: React.FC = () => {
     {
       key: "created_by_str",
       label: "Created by",
-      sort_allowed: true,
       render: (row: any) => row.created_by_str || "—",
       width: "200px",
     },
     {
       key: "user_str",
       label: "User",
+      orderKey:"user__first_name",
       sort_allowed: true,
       render: (row: any) => row.user_str || "—",
       width: "200px",
@@ -128,6 +183,7 @@ const BookingsPage: React.FC = () => {
     {
       key: "location_str",
       label: "Location",
+      orderKey:"address__location__city",
       sort_allowed: true,
       render: (row: any) => row.location_str || "—",
       width: "280px",
@@ -146,16 +202,24 @@ const BookingsPage: React.FC = () => {
           switch (s) {
             case "open":
               return "bg-blue-100 text-blue-700 border-blue-200";
-            case "payment_collected":
-            case "completed":
-              return "bg-green-100 text-green-700 border-green-200";
-            case "initiated":
             case "verified":
               return "bg-yellow-100 text-yellow-700 border-yellow-200";
+            case "root_manager":
+              return "bg-indigo-100 text-indigo-700 border-indigo-200";
+            case "phlebo":
+              return "bg-amber-100 text-amber-700 border-amber-200";
             case "sample_collected":
-              return "bg-orange-100 text-orange-700 border-orange-200";
+              return "bg-cyan-100 text-cyan-700 border-cyan-200";
+            case "payment_collected":
+              return "bg-emerald-100 text-emerald-800 border-emerald-300";
             case "report_uploaded":
-              return "bg-purple-100 text-purple-700 border-purple-200";
+              return "bg-violet-100 text-violet-700 border-violet-200";
+            case "health_manager":
+              return "bg-teal-100 text-teal-800 border-teal-300";
+            case "dietitian":
+              return "bg-pink-100 text-pink-800 border-pink-300";
+            case "completed":
+              return "bg-green-100 text-green-700 border-green-200";
             case "failed":
             case "cancelled":
               return "bg-red-100 text-red-700 border-red-200";
@@ -236,6 +300,7 @@ const BookingsPage: React.FC = () => {
     },
     {
       key: "time_slot",
+      orderKey:"scheduled_date",
       label: "Time Slot",
       sort_allowed: true,
       render: (row: any) => row.scheduled_date + '\n | \n' + row.scheduled_time_slot,
@@ -250,7 +315,10 @@ const BookingsPage: React.FC = () => {
             className={`p-1 rounded-md ${allowed_edit(row.status) ? "hover:bg-gray-100 cursor-pointer" : "opacity-40 cursor-not-allowed"
               }`} title="Edit"
             disabled={!allowed_edit(row.status)}
-            onClick={() => handleMakeCall(row.id)}
+            onClick={(e) => {
+              e.stopPropagation();
+              handleMakeCall(row.id)
+            }}
           >
             <PhoneOutgoing className="w-5 h-5 text-gray-600 hover:text-primary " />
           </button>
@@ -258,9 +326,10 @@ const BookingsPage: React.FC = () => {
             className={`p-1 rounded-md ${allowed_edit(row.status) ? "hover:bg-gray-100 cursor-pointer" : "opacity-40 cursor-not-allowed"
               }`} title="Edit"
             disabled={!allowed_edit(row.status)}
-            onClick={() =>
+            onClick={(e) => {
+              e.stopPropagation();
               setDrawerEdit({ open: true, id: row.id, row })
-            }
+            }}
           >
             <Pencil className="w-5 h-5 text-gray-600 hover:text-primary " />
           </button>
@@ -269,9 +338,10 @@ const BookingsPage: React.FC = () => {
           <button
             className="p-1 hover:bg-gray-100 rounded"
             title="History"
-            onClick={() =>
+            onClick={(e) => {
+              e.stopPropagation();
               setDrawerHistory({ open: true, id: row.id })
-            }
+            }}
           >
             <History className="w-5 h-5 text-gray-600 hover:text-primary" />
           </button>
@@ -282,9 +352,10 @@ const BookingsPage: React.FC = () => {
               }`}
             title={(row.payment_count ?? 0) > 0 ? "Payments" : "No payments available"}
             disabled={!((row.payment_count ?? 0) > 0)}
-            onClick={() =>
+            onClick={(e) => {
+              e.stopPropagation();
               (row.payment_count ?? 0) > 0 && setDrawerPayments({ open: true, id: row.id })
-            }
+            }}
           >
             <IndianRupee className="w-5 h-5 text-gray-600 hover:text-primary" />
           </button>
@@ -295,9 +366,10 @@ const BookingsPage: React.FC = () => {
               }`}
             title={(row.document_count ?? 0) > 0 ? "Documents" : "No documents available"}
             disabled={!((row.document_count ?? 0) > 0)}
-            onClick={() =>
+            onClick={(e) => {
+              e.stopPropagation();
               (row.document_count ?? 0) > 0 && setDrawerDocuments({ open: true, id: row.id })
-            }
+            }}
           >
             <FileText className="w-5 h-5 text-gray-600 hover:text-primary" />
           </button>
@@ -326,6 +398,10 @@ const BookingsPage: React.FC = () => {
             showFilter
             showAdd
             showDateRange
+            onRowClick={(row) => {
+              window.location.href = `/bookings/${row.id}/edit`;
+            }}
+            rowBgColor={(row) => rowStatusBg(row.status)}
             extraParams={{ ...filters, reloadKey }}
             onFilterClick={handleOpenFilter}
             onAddClick={handleOpenAdd}

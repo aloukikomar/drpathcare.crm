@@ -126,9 +126,9 @@ const ChangesDrawer: React.FC<Props> = ({
   const dateChanged = original.scheduled_date !== updated.scheduledDate;
   const slotChanged =
     original.scheduled_time_slot !== updated.scheduledSlot;
-
+  console.log(original.final_amount,updated.finalAmount,"---")
   const amountChanged =
-    String(original.final_amount) !== String(updated.finalAmount);
+    Number(original.final_amount) !== Number(updated.finalAmount);
 
   const itemsChanged =
     updated.items.some(

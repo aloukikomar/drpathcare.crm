@@ -123,9 +123,9 @@ const CustomerDetailsSection: React.FC<Props> = ({
           <h2 className="text-lg font-semibold">
             {mode === "edit" ? "Customer" : "Customer Details"}
           </h2>
-          {/* <p className="text-sm text-gray-500">
+          <p className="text-sm text-gray-500">
             {mode === "edit" ? "Customer cannot be changed in edit mode" : "Select or create a customer"}
-          </p> */}
+          </p>
         </div>
 
         {mode === "create" && (
@@ -174,11 +174,11 @@ const CustomerDetailsSection: React.FC<Props> = ({
             {customer.gender && <span>Gender: {customer.gender}</span>}
           </div>
 
-          {mode === "create" && (
+          {/* {mode === "create" && ( */}
             <button type="button" className="p-2 hover:bg-gray-200 rounded" onClick={openAddCustomer}>
               <Pencil className="w-5 h-5 text-gray-700" />
             </button>
-          )}
+           {/* )} */}
         </div>
       ) : (
         <p className="text-gray-500 text-sm">No customer selected</p>

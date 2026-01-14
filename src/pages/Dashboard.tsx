@@ -33,17 +33,38 @@ const formatDate = (d: Date) =>
 
 // semantic colors (same meaning everywhere)
 export const STATUS_COLORS: Record<string, string> = {
-  open: "#3b82f6",              // blue-500
-  payment_collected: "#22c55e", // green-500
-  completed: "#22c55e",
+  // 1️⃣ New / untouched
+  open: "#3b82f6", // blue-500
 
-  initiated: "#facc15",         // yellow-400
-  verified: "#facc15",
+  // 2️⃣ Verified
+  verified: "#facc15", // yellow-400
 
-  sample_collected: "#f97316",  // orange-500
-  report_uploaded: "#a855f7",   // purple-500
+  // 3️⃣ Root manager
+  root_manager: "#6366f1", // indigo-500
 
-  failed: "#ef4444",            // red-500
+  // 4️⃣ Phlebo assigned
+  phlebo: "#f59e0b", // amber-500
+
+  // 5️⃣ Sample collected
+  sample_collected: "#06b6d4", // cyan-500
+
+  // 6️⃣ Payment collected
+  payment_collected: "#10b981", // emerald-500
+
+  // 7️⃣ Report uploaded
+  report_uploaded: "#8b5cf6", // violet-500
+
+  // 8️⃣ Health manager
+  health_manager: "#14b8a6", // teal-500
+
+  // 9️⃣ Dietitian
+  dietitian: "#ec4899", // pink-500
+
+  // ✅ Completed
+  completed: "#22c55e", // green-500 (final success)
+
+  // ❌ Terminal
+  failed: "#ef4444", // red-500
   cancelled: "#ef4444",
 };
 
@@ -64,7 +85,7 @@ const Dashboard: React.FC = () => {
   ]);
   const [activities, setActivities] = useState<any[]>([]);
   const [loadingActivity, setLoadingActivity] = useState(false);
-const isAdmin = !!data?.revenue;
+  const isAdmin = !!data?.revenue;
   useEffect(() => {
     const loadActivity = async () => {
       try {
@@ -76,7 +97,7 @@ const isAdmin = !!data?.revenue;
 
         const res = await customerApi.get("/booking-actions/", {
           params: {
-            user: isAdmin? null:u.id,
+            user: isAdmin ? null : u.id,
             limit: 6,
           },
         });
@@ -92,31 +113,67 @@ const isAdmin = !!data?.revenue;
     loadActivity();
   }, [isAdmin]);
 
+
+  type LegendItem = {
+    value: string;
+    color: string;
+    payload: {
+      count: number;
+      status: string;
+    };
+  };
+
   const ScrollableLegend = ({ payload }: any) => {
     if (!payload?.length) return null;
+
+    const total = payload.reduce(
+      (sum: number, e: any) => sum + (e.payload?.count || 0),
+      0
+    );
 
     return (
       <div className="mt-2 max-h-28 overflow-y-auto overflow-x-auto">
         <div className="flex flex-wrap gap-3 justify-center px-2">
-          {payload.map((entry: any, index: number) => (
-            <div
-              key={index}
-              className="flex items-center gap-2 text-xs shrink-0"
-            >
-              <span
-                className="inline-block w-3 h-3 rounded"
-                style={{ backgroundColor: entry.color }}
-              />
-              <span className="whitespace-nowrap">
-                {entry.value.replace("_", " ").toUpperCase()}
-              </span>
-            </div>
-          ))}
+          {payload.map((entry: any, index: number) => {
+            const count = entry.payload?.count || 0;
+            let percent = 0;
+          if (total > 0 && count > 0) {
+            percent = (count / total) * 100;
+          }
+
+          const percentLabel =
+            percent > 0 && percent < 1
+              ? "<1%"
+              : `${percent.toFixed(1)}%`;
+
+
+            return (
+              <div
+                key={index}
+                className="flex items-center gap-2 text-xs shrink-0"
+              >
+                {/* Color box */}
+                <span
+                  className="inline-block w-3 h-3 rounded"
+                  style={{ backgroundColor: entry.color }}
+                />
+
+                {/* Label + stats */}
+                <span className="whitespace-nowrap">
+                  {entry.value.replaceAll("_", " ").toUpperCase()}
+                  <span className="ml-1 text-gray-500 font-medium">
+                    ({count} • {percentLabel})
+                  </span>
+                </span>
+              </div>
+            );
+          })}
         </div>
       </div>
-
     );
   };
+
+
 
 
   /* ----------------------------------
@@ -143,7 +200,7 @@ const isAdmin = !!data?.revenue;
     loadDashboard();
   }, []);
 
-  
+
 
   const formatRangeLabel = () => {
     const r = range[0];

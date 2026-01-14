@@ -50,6 +50,8 @@ export type DataTableProps<T = any> = {
   onAddClick?: () => void;
   onRowClick?: (row: T) => void;
   onRefresh?: () => void;
+  // ✅ NEW
+  rowBgColor?: (row: T) => string | null;
   initialSearch?: string;
   className?: string;
   emptyMessage?: string;
@@ -76,6 +78,7 @@ export default function DataTable<T = any>({
   onFilterClick,
   onAddClick,
   onRowClick,
+  rowBgColor,   // ✅ NEW
   onRefresh,
   initialSearch = "",
   className,
@@ -258,6 +261,20 @@ export default function DataTable<T = any>({
     }
   };
 
+  const getHoverBg = (bg?: string | null) => {
+    console.log("in")
+    if (!bg) return "hover:bg-gray-50";
+
+    // convert bg-blue-100 → hover:bg-blue-200
+    const match = bg.match(/bg-(.+)-(\d+)/);
+    if (!match) return "hover:bg-gray-50";
+
+    const [, color, shade] = match;
+    const nextShade = Math.min(Number(shade) + 100, 900);
+    console.log(`hover:bg-${color}-${nextShade}`)
+    return `hover:bg-${color}-${nextShade}`;
+  };
+
   return (
     <div className={className}>
       {/* Header */}
@@ -425,76 +442,90 @@ export default function DataTable<T = any>({
       </div>
 
       {/* Table container */}
-      <div className="bg-white border rounded-md shadow-sm overflow-x-auto">
-        <table
-          key={`${page}-${pageSize}`}
-          className={`${scroll_y ? "min-w-max" : "min-w-full"} divide-y divide-gray-100`}
-        >
-          <thead className="bg-gray-50">
-            <tr>
-              {columns.map((col) => {
-                const isActive = orderingKey === (col.orderKey ?? col.key);
-                return (
-                  <th
-                    key={col.key}
-                    style={{ width: col.width }}
-                    className={`px-4 py-3 text-left text-sm font-medium text-gray-600 ${col.sort_allowed ? "cursor-pointer select-none" : ""
-                      }`}
-                    onClick={() => handleSort(col)}
-                  >
-                    <div className="inline-flex items-center gap-2">
-                      <span>{col.label}</span>
-                      {col.sort_allowed && (
-                        <span className="text-xs text-gray-400" aria-hidden>
-                          {isActive ? (orderingDir === "asc" ? "▲" : "▼") : "⇅"}
-                        </span>
-                      )}
-                    </div>
-                  </th>
-                );
-              })}
-            </tr>
-          </thead>
-
-          <tbody>
-            {loading ? (
-
-              <>
-                {/* Skeleton Loading Rows */}
-                {[...Array(10)].map((_, i) => (
-                  <tr key={i} className="animate-pulse">
-                    {columns.map((col) => (
-                      <td key={col.key} className="px-4 py-3">
-                        <div className="h-3 w-full bg-gray-200 rounded"></div>
-                      </td>
-                    ))}
-                  </tr>
-                ))}
-              </>
-
-            ) : data.length === 0 ? (
-              <tr>
-                <td colSpan={columns.length} className="py-6 text-center text-sm text-gray-500">
-                  {error ? <span className="text-red-500">{error}</span> : emptyMessage}
-                </td>
-              </tr>
-            ) : (
-              data.map((row, idx) => (
-                <tr
-                  key={(row as any).id ?? idx}
-                  className="hover:bg-gray-50 cursor-pointer"
-                  onClick={() => onRowClick && onRowClick(row)}
-                >
-                  {columns.map((col) => (
-                    <td key={col.key} className="px-4 py-3 text-sm align-top">
-                      {renderCell(col, row)}
-                    </td>
-                  ))}
+      <div className="bg-white border rounded-md shadow-sm">
+        {/* Horizontal scroll */}
+        <div className="overflow-x-auto">
+          {/* Vertical scroll (95% height) */}
+          <div
+            className="overflow-y-auto"
+            style={{ maxHeight: "68vh" }}
+          >
+            <table
+              className={`${scroll_y ? "min-w-max" : "min-w-full"} divide-y divide-gray-100`}
+            >
+              <thead className="bg-gray-50 sticky top-0 z-10">
+                <tr>
+                  {columns.map((col) => {
+                    const isActive = orderingKey === (col.orderKey ?? col.key);
+                    return (
+                      <th
+                        key={col.key}
+                        style={{ width: col.width }}
+                        className={`px-4 py-3 text-left text-sm font-medium text-gray-600 ${col.sort_allowed ? "cursor-pointer select-none" : ""
+                          }`}
+                        onClick={() => handleSort(col)}
+                      >
+                        <div className="inline-flex items-center gap-2">
+                          <span>{col.label}</span>
+                          {col.sort_allowed && (
+                            <span className="text-xs text-gray-400" aria-hidden>
+                              {isActive ? (orderingDir === "asc" ? "▲" : "▼") : "⇅"}
+                            </span>
+                          )}
+                        </div>
+                      </th>
+                    );
+                  })}
                 </tr>
-              ))
-            )}
-          </tbody>
-        </table>
+              </thead>
+
+              <tbody>
+                {loading ? (
+
+                  <>
+                    {/* Skeleton Loading Rows */}
+                    {[...Array(10)].map((_, i) => (
+                      <tr key={i} className="animate-pulse">
+                        {columns.map((col) => (
+                          <td key={col.key} className="px-4 py-3">
+                            <div className="h-3 w-full bg-gray-200 rounded"></div>
+                          </td>
+                        ))}
+                      </tr>
+                    ))}
+                  </>
+
+                ) : data.length === 0 ? (
+                  <tr>
+                    <td colSpan={columns.length} className="py-6 text-center text-sm text-gray-500">
+                      {error ? <span className="text-red-500">{error}</span> : emptyMessage}
+                    </td>
+                  </tr>
+                ) : (
+                  data.map((row, idx) => (
+                    
+                    <tr
+                      key={(row as any).id ?? idx}
+                      onClick={() => onRowClick?.(row)}
+                      className={[
+                        "transition-colors hover:bg-gray-200",
+                        onRowClick ? "cursor-pointer" : "",
+                        rowBgColor?.(row) ?? "",
+                        //getHoverBg(rowBgColor?.(row)),
+                      ].join(" ")}
+                    >
+                      {columns.map((col) => (
+                        <td key={col.key} className="px-4 py-3 text-sm align-top">
+                          {renderCell(col, row)}
+                        </td>
+                      ))}
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
+          </div>
+        </div>
       </div>
 
       {/* Pagination */}
