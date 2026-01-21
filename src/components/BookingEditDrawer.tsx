@@ -354,7 +354,7 @@ export default function BookingEditDrawer({
                 // { value: "sample_collected", label: "Sample Collected" },
                 { value: "cancelled", label: "Cancelled" },
             ]
-            else if ((parsed?.role?.name == 'Phlebo'|| parsed?.role?.name == 'Root Manager') && currentStatus == 'Root Manager') return [
+            else if ((parsed?.role?.name == 'Phlebo'|| parsed?.role?.name == 'Root Manager') && currentStatus == 'root_manager') return [
                 { value: "sample_collected", label: "Sample Collected" },
                 { value: "cancelled", label: "Cancelled" },
             ]
