@@ -655,7 +655,7 @@ export default function BookingEditDrawer({
                 </div>
                 <div className="p-2 border-t bg-white flex justify-top gap-2">
 
-                    <div className="p-1 bg-white flex justify-end gap-2">
+                    <div className="p-1 bg-white flex justify-end gap-2 min-w-max">
                         {agentList?.map((item) => (
                             <div
                                 className="
