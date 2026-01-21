@@ -354,11 +354,11 @@ export default function BookingEditDrawer({
                 // { value: "sample_collected", label: "Sample Collected" },
                 { value: "cancelled", label: "Cancelled" },
             ]
-            else if (parsed?.role?.name == 'Phlebo' && currentStatus == 'phlebo') return [
+            else if ((parsed?.role?.name == 'Phlebo'|| parsed?.role?.name == 'Root Manager') && currentStatus == 'phlebo') return [
                 { value: "sample_collected", label: "Sample Collected" },
                 { value: "cancelled", label: "Cancelled" },
             ]
-            else if (parsed?.role?.name == 'Phlebo' && currentStatus == 'sample_collected') return [
+            else if ((parsed?.role?.name == 'Phlebo'|| parsed?.role?.name == 'Root Manager') && currentStatus == 'sample_collected') return [
                 { value: "completed", label: "Completed" },
                 { value: "cancelled", label: "Cancelled" },
             ]

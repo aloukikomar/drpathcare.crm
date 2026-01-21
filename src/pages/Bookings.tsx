@@ -175,7 +175,7 @@ const BookingsPage: React.FC = () => {
     {
       key: "user_str",
       label: "User",
-      orderKey:"user__first_name",
+      orderKey: "user__first_name",
       sort_allowed: true,
       render: (row: any) => row.user_str || "—",
       width: "200px",
@@ -183,7 +183,7 @@ const BookingsPage: React.FC = () => {
     {
       key: "location_str",
       label: "Location",
-      orderKey:"address__location__city",
+      orderKey: "address__location__city",
       sort_allowed: true,
       render: (row: any) => row.location_str || "—",
       width: "280px",
@@ -300,7 +300,7 @@ const BookingsPage: React.FC = () => {
     },
     {
       key: "time_slot",
-      orderKey:"scheduled_date",
+      orderKey: "scheduled_date",
       label: "Time Slot",
       sort_allowed: true,
       render: (row: any) => row.scheduled_date + '\n | \n' + row.scheduled_time_slot,
@@ -415,41 +415,89 @@ const BookingsPage: React.FC = () => {
               <div className="bg-white p-6 rounded w-full max-w-md">
                 <h3 className="text-lg font-semibold mb-4">Filters</h3>
 
+                {/* STATUS FILTER */}
                 <div className="mb-4">
-                  <label className="block mb-1 text-sm font-medium">Status</label>
+                  <label className="block mb-1 text-sm font-medium">
+                    Booking Status
+                  </label>
                   <select
                     className="w-full border px-3 py-2 rounded"
+                    value={filters.status || ""}
                     onChange={(e) =>
                       setFilters((prev) => ({
                         ...prev,
-                        status: e.target.value,
+                        status: e.target.value || undefined,
                       }))
                     }
                   >
                     <option value="">All</option>
                     <option value="open">Open</option>
-                    <option value="payment_collected">Paid</option>
+                    <option value="verified">Verified</option>
+                    <option value="root_manager">Root Manager</option>
+                    <option value="phlebo">Phlebo</option>
+                    <option value="sample_collected">Sample Collected</option>
+                    <option value="payment_collected">Payment Collected</option>
+                    <option value="report_uploaded">Report Uploaded</option>
+                    <option value="health_manager">Health Manager</option>
+                    <option value="dietitian">Dietitian</option>
+                    <option value="completed">Completed</option>
                     <option value="cancelled">Cancelled</option>
                   </select>
                 </div>
 
-                <div className="flex justify-end gap-2">
-                  <button
-                    onClick={() => setFilterModalOpen(false)}
-                    className="px-3 py-2 border rounded"
+                {/* PAYMENT STATUS FILTER */}
+                <div className="mb-6">
+                  <label className="block mb-1 text-sm font-medium">
+                    Payment Status
+                  </label>
+                  <select
+                    className="w-full border px-3 py-2 rounded"
+                    value={filters.payment_status || ""}
+                    onChange={(e) =>
+                      setFilters((prev) => ({
+                        ...prev,
+                        payment_status: e.target.value || undefined,
+                      }))
+                    }
                   >
-                    Cancel
-                  </button>
+                    <option value="">All</option>
+                    <option value="pending">Pending</option>
+                    <option value="initiated">Initiated</option>
+                    <option value="success">Paid</option>
+                    <option value="failed">Failed</option>
+                  </select>
+                </div>
+
+                {/* ACTIONS */}
+                <div className="flex justify-between items-center">
+                  {/* RESET */}
                   <button
-                    onClick={() => handleApplyFilters(filters)}
-                    className="px-3 py-2 bg-primary text-white rounded"
+                    onClick={() => setFilters({})}
+                    className="px-3 py-2 border rounded text-sm text-gray-700 hover:bg-gray-50"
                   >
-                    Apply
+                    Reset
                   </button>
+
+                  <div className="flex gap-2">
+                    <button
+                      onClick={() => setFilterModalOpen(false)}
+                      className="px-3 py-2 border rounded"
+                    >
+                      Cancel
+                    </button>
+
+                    <button
+                      onClick={() => handleApplyFilters(filters)}
+                      className="px-3 py-2 bg-primary text-white rounded"
+                    >
+                      Apply
+                    </button>
+                  </div>
                 </div>
               </div>
             </div>
           )}
+
 
           {/* --------------------- ADD MODAL --------------------- */}
           {addModalOpen && (
