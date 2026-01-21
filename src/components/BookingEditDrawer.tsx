@@ -653,7 +653,7 @@ export default function BookingEditDrawer({
                 <div className="p-3 bg-white flex justify-top gap-2">
                     Assigned Agents
                 </div>
-                <div className="p-2 border-t bg-white flex justify-top gap-2">
+                <div className="p-2 border-t bg-white flex justify-top gap-2 overflow-x-auto">
 
                     <div className="p-1 bg-white flex justify-end gap-2 min-w-max">
                         {agentList?.map((item) => (
