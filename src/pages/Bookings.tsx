@@ -177,7 +177,17 @@ const BookingsPage: React.FC = () => {
       label: "User",
       orderKey: "user__first_name",
       sort_allowed: true,
-      render: (row: any) => row.user_str || "—",
+      render: (row: any) => {
+        const user = localStorage.getItem('user')
+        if (user) {
+
+          const parsed = JSON.parse(user);
+          if (parsed?.role?.name == 'Phlebo') {
+            return row.user_str.slice(0, -13) || "—"
+          }
+        }
+        return row.user_str || "—"
+      },
       width: "200px",
     },
     {

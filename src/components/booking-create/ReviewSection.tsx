@@ -83,14 +83,22 @@ const ReviewSection: React.FC<Props> = ({
         // No discount capacity
         if (maxAdminDiscount <= 0) return false;
 
-        if (mode === "edit" && ["sample_collected","payment_collected","report_uploaded","health_manager","dietitian","completed","cancelled"].includes(originalBooking.status)) return false;
+        if (mode === "edit" && ["sample_collected", "payment_collected", "report_uploaded", "health_manager", "dietitian", "completed", "cancelled"].includes(originalBooking.status)) return false;
 
-            // Optional: in future we can add booking-status checks here
-            // if (mode === "edit" && originalBooking.status !== "open") return false;
+        // Optional: in future we can add booking-status checks here
+        // if (mode === "edit" && originalBooking.status !== "open") return false;
 
-            return true;
+        return true;
     };
 
+    const getUserRole = () => {
+        const user = localStorage.getItem('user')
+        if (user) {
+
+            const parsed = JSON.parse(user);
+            return parsed?.role?.name
+        }
+    }
 
     // ----------------------------------
     // RENDER
@@ -122,10 +130,11 @@ const ReviewSection: React.FC<Props> = ({
                             </p>
 
                             <div className="flex flex-wrap gap-3 text-gray-600">
-                                <span className="flex items-center gap-1">
+                                {getUserRole() != 'Phlebo' && <span className="flex items-center gap-1">
                                     <Phone className="w-4 h-4" />
                                     {customer.mobile}
                                 </span>
+                                }
 
                                 {customer.email && (
                                     <span className="flex items-center gap-1">

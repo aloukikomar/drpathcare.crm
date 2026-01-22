@@ -87,6 +87,15 @@ const CustomerDetailsSection: React.FC<Props> = ({
     };
   }, [customer]);
 
+  const getUserRole = () => {
+    const user = localStorage.getItem('user')
+    if (user) {
+
+      const parsed = JSON.parse(user);
+      return parsed?.role?.name
+    }
+  }
+
   const canContinue = !!customer && !!address;
 
   // If mode toggles between create/edit, ensure drawers close/reset
@@ -158,11 +167,12 @@ const CustomerDetailsSection: React.FC<Props> = ({
               <span className="font-bold">{customer.first_name} {customer.last_name}</span>
             </div>
 
-            <div className="flex items-center gap-2">
-              <Phone className="w-5 h-5 text-gray-600" />
-              <span>{customer.mobile}</span>
-            </div>
-
+            {getUserRole() != 'Phlebo' &&
+              <div className="flex items-center gap-2">
+                <Phone className="w-5 h-5 text-gray-600" />
+                <span>{customer.mobile}</span>
+              </div>
+            }
             {customer.email && (
               <div className="flex items-center gap-2">
                 <Mail className="w-5 h-5 text-gray-600" />
@@ -175,10 +185,10 @@ const CustomerDetailsSection: React.FC<Props> = ({
           </div>
 
           {/* {mode === "create" && ( */}
-            <button type="button" className="p-2 hover:bg-gray-200 rounded" onClick={openAddCustomer}>
-              <Pencil className="w-5 h-5 text-gray-700" />
-            </button>
-           {/* )} */}
+          <button type="button" className="p-2 hover:bg-gray-200 rounded" onClick={openAddCustomer}>
+            <Pencil className="w-5 h-5 text-gray-700" />
+          </button>
+          {/* )} */}
         </div>
       ) : (
         <p className="text-gray-500 text-sm">No customer selected</p>
