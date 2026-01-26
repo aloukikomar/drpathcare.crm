@@ -14,34 +14,36 @@ import ChangesDrawer from "../components/booking-create/ChangesDrawer";
 
 import { customerApi } from "../api/axios";
 import type { ItemRow } from "./BookingCreate"; // Reuse interface
-import { Home, TestTube2, ClipboardCheck } from "lucide-react";
+import { Home, TestTube2, ClipboardCheck, FileText, IndianRupee, Pencil, PhoneOutgoing, History, DownloadIcon, LinkIcon, RefreshCwIcon } from "lucide-react";
 import FormDrawer from "../components/FormDrawer";
+import CommonDrawer from "../components/CommonDrawer";
+import BookingEditDrawer from "../components/BookingEditDrawer";
 
 const ALL_TABS = [
 
-  {
-    index:0,
-    label: "Customer Details",
-    icon: <Home className="w-5 h-5" />,
-  },
-  {
-    index:1,
-    label: "Booking Details",
-    icon: <TestTube2 className="w-5 h-5" />,
-  },
     {
-    index:2,
-    label: "Review & Confirm",
-    icon: <ClipboardCheck className="w-5 h-5" />,
-  },
+        index: 0,
+        label: "Customer Details",
+        icon: <Home className="w-5 h-5" />,
+    },
+    {
+        index: 1,
+        label: "Booking Details",
+        icon: <TestTube2 className="w-5 h-5" />,
+    },
+    {
+        index: 2,
+        label: "Review & Confirm",
+        icon: <ClipboardCheck className="w-5 h-5" />,
+    },
 ];
 
 const B_TABS = [
     {
-    index:2,
-    label: "Review & Confirm",
-    icon: <ClipboardCheck className="w-5 h-5" />,
-  },
+        index: 2,
+        label: "Review & Confirm",
+        icon: <ClipboardCheck className="w-5 h-5" />,
+    },
 ];
 
 
@@ -80,14 +82,50 @@ const BookingEdit: React.FC = () => {
 
     const [openPatientDrawer, setOpenPatientDrawer] = useState(false)
     const [refreshKey, setRefreshKey] = useState(0)
-    const [tabs,setTabs] = useState(ALL_TABS)
+    const [tabs, setTabs] = useState(ALL_TABS)
+
+    // --- Drawer states ---
+    const [drawerPayments, setDrawerPayments] = useState<{
+        open: boolean;
+        id: string | null;
+    }>({ open: false, id: null });
+
+    const [drawerDocuments, setDrawerDocuments] = useState<{
+        open: boolean;
+        id: string | null;
+    }>({ open: false, id: null });
+
+    const [drawerHistory, setDrawerHistory] = useState<{
+        open: boolean;
+        id: string | null;
+    }>({ open: false, id: null });
+
+    const [drawerEdit, setDrawerEdit] = useState<{
+        open: boolean;
+        id: string | null;
+        row: any,
+    }>({ open: false, id: null, row: null, });
 
     const visibleTabs = (status) => {
-        console.log(status,"---")
-        if (!["sample_collected","payment_collected","report_uploaded","health_manager","dietitian","completed","cancelled"].includes(status)) return ALL_TABS;
+        if (!["sample_collected", "payment_collected", "report_uploaded", "health_manager", "dietitian", "completed", "cancelled"].includes(status)) return ALL_TABS;
         setActiveTab(2)
         return B_TABS;
     };
+
+    const handleMakeCall = async (booking_id) => {
+        try {
+            const res = await customerApi.post("/calls/connect/", {
+                "call_type": "booking",
+                "booking_id": booking_id
+            })
+            alert("Call initiated");
+        } catch (err: any) {
+            console.error(err);
+            alert("Failed to initiat call " + String(err.serverMessage));
+        } finally {
+            //setSaving(false);
+        }
+    }
 
     // ================================
     // LOAD BOOKING DETAILS
@@ -272,27 +310,101 @@ const BookingEdit: React.FC = () => {
 
                 <main className="flex-1 overflow-y-auto p-4 lg:p-6">
                     {/* TABS */}
-                    <div className="mb-6 flex flex-wrap gap-2">
-                        {tabs.map((tab, index) => {
-                            const isActive = activeTab === tab.index;
+                    <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
 
-                            return (
-                                <button
-                                    key={index}
-                                    onClick={() => setActiveTab(tab.index)}
-                                    className={`
-                                                flex items-center justify-center gap-2 
-                                                px-4 py-2 rounded-lg text-sm font-medium flex-1 sm:flex-none
-                                                transition-all
-                                                ${isActive ? "bg-primary text-white shadow" : "bg-gray-100 text-gray-700"}
-                                                `}
-                                >
-                                    {tab.icon}
-                                    <span>{tab.label}</span>
-                                </button>
-                            );
-                        })}
+                        {/* ================= LEFT: TABS ================= */}
+                        <div className="flex flex-wrap gap-2">
+                            {tabs.map((tab, index) => {
+                                const isActive = activeTab === tab.index;
+
+                                return (
+                                    <button
+                                        key={index}
+                                        onClick={() => setActiveTab(tab.index)}
+                                        className={`
+            flex items-center gap-2 
+            px-4 py-2 rounded-lg text-sm font-medium
+            transition-all
+            ${isActive
+                                                ? "bg-primary text-white shadow"
+                                                : "bg-gray-100 text-gray-700 hover:bg-gray-200"}
+          `}
+                                    >
+                                        {tab.icon}
+                                        <span>{tab.label}</span>
+                                    </button>
+                                );
+                            })}
+                        </div>
+
+                        {/* ================= RIGHT: ACTION BUTTONS ================= */}
+                        <div className="flex items-center gap-2 self-start sm:self-auto">
+
+                            <button
+                                className="p-1 rounded-md hover:bg-gray-100"
+                                title="Call"
+                                onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleMakeCall(originalBooking.id);
+                                }}
+                            >
+                                <PhoneOutgoing className="w-5 h-5 text-gray-600 hover:text-primary" />
+                            </button>
+
+                            <button
+                                className="p-1 rounded-md hover:bg-gray-100 cursor-pointer" title="Edit"
+                                onClick={(e) => {
+                                    e.stopPropagation();
+                                    setDrawerEdit({ open: true, id: originalBooking.id, row: originalBooking })
+                                }}
+                            >
+                                <Pencil className="w-5 h-5 text-gray-600 hover:text-primary" />
+                            </button>
+
+                            <button
+                                className="p-1 hover:bg-gray-100 rounded"
+                                title="History"
+                                onClick={(e) => {
+                                    e.stopPropagation();
+                                    setDrawerHistory({ open: true, id: originalBooking.id })
+                                }}
+                            >
+                                <History className="w-5 h-5 text-gray-600 hover:text-primary" />
+                            </button>
+
+                            <button
+                                className={`p-1 rounded-md ${(originalBooking.payment_count ?? 0) > 0
+                                    ? "hover:bg-gray-100"
+                                    : "opacity-40 cursor-not-allowed"
+                                    }`}
+                                disabled={!((originalBooking.payment_count ?? 0) > 0)}
+                                title="Payments"
+                                onClick={(e) => {
+                                    e.stopPropagation();
+                                    (originalBooking.payment_count ?? 0) > 0 && setDrawerPayments({ open: true, id: originalBooking.id })
+                                }}
+                            >
+                                <IndianRupee className="w-5 h-5 text-gray-600 hover:text-primary" />
+                            </button>
+
+                            <button
+                                className={`p-1 rounded-md ${(originalBooking.document_count ?? 0) > 0
+                                    ? "hover:bg-gray-100"
+                                    : "opacity-40 cursor-not-allowed"
+                                    }`}
+                                disabled={!((originalBooking.document_count ?? 0) > 0)}
+                                title="Documents"
+                                onClick={(e) => {
+                                    e.stopPropagation();
+                                    (originalBooking.document_count ?? 0) > 0 && setDrawerDocuments({ open: true, id: originalBooking.id })
+                                }}
+                            >
+                                <FileText className="w-5 h-5 text-gray-600 hover:text-primary" />
+                            </button>
+
+                        </div>
                     </div>
+
 
 
                     {/* PANELS */}
@@ -409,6 +521,255 @@ const BookingEdit: React.FC = () => {
                     onConfirm={handleUpdateBooking}
                 />
             </div>
+
+            {/* ------------------------- EditBooking DRAWER ------------------------- */}
+            <BookingEditDrawer
+                open={drawerEdit.open}
+                agentList={drawerEdit.row?.view_stack}
+                refId={drawerEdit.row?.ref_id}
+                onClose={() => setDrawerEdit({ open: false, id: null, row: null })}
+                bookingId={drawerEdit.id}
+                currentStatus={drawerEdit.row?.status}
+                onSuccess={() => window.location.reload()}
+            />
+
+            {/* ------------------------- PAYMENTS DRAWER ------------------------- */}
+            <CommonDrawer
+                open={drawerPayments.open}
+                onClose={() => setDrawerPayments({ open: false, id: null })}
+                apiUrl={
+                    drawerPayments.id
+                        ? `/payments/?booking=${drawerPayments.id}&page_size=100`
+                        : null
+                }
+                heading={`Payments for Booking #${drawerPayments.id}`}
+                noDataMsg="No payments found"
+                noDataSubMsg="No transactions recorded for this booking"
+
+                /** ⭐ Fully Upgraded Payment Card (Old CRM Style) */
+                renderItem={(p: any, refreshList: () => void) => (
+                    <div className="space-y-3">
+
+                        {/* HEADER — Amount + Update Button */}
+                        <div className="flex items-center justify-between">
+                            <div className="text-lg font-semibold text-gray-900">
+                                ₹{p.amount}
+                            </div>
+
+                            {/* UPDATE PAYMENT STATUS */}
+                            <button
+                                onClick={async (e) => {
+                                    e.stopPropagation();
+                                    try {
+                                        await customerApi.post(
+                                            `/payments/booking/${drawerPayments.id}/refresh-latest/`
+                                        );
+                                        refreshList();
+                                    } catch (err) {
+                                        console.error("Failed to update payment", err);
+                                    }
+                                }}
+                                title="Refresh Payment Status"
+                                className="p-1.5 rounded border border-blue-600 text-blue-600 hover:bg-blue-50"
+                            >
+                                <RefreshCwIcon className="w-4 h-4" />
+                            </button>
+                        </div>
+
+                        {/* STATUS + METHOD */}
+                        <div className="flex flex-wrap gap-2 items-center text-sm">
+
+                            {/* STATUS BADGE */}
+                            <span
+                                className={`px-2 py-0.5 rounded-full text-xs font-medium 
+          ${p.status === "paid"
+                                        ? "bg-green-100 text-green-700"
+                                        : p.status === "failed"
+                                            ? "bg-red-100 text-red-700"
+                                            : "bg-gray-100 text-gray-700"
+                                    }
+        `}
+                            >
+                                {p.status.toUpperCase()}
+                            </span>
+
+                            {/* METHOD */}
+                            <span className="text-gray-600 text-sm">
+                                {p.method}
+                            </span>
+                        </div>
+
+                        {/* CREATED AT */}
+                        <div className="text-xs text-gray-500">
+                            {new Date(p.created_at).toLocaleString("en-IN", {
+                                day: "2-digit",
+                                month: "short",
+                                year: "numeric",
+                                hour: "2-digit",
+                                minute: "2-digit",
+                            })}
+                        </div>
+
+                        {/* PAYMENT LINK */}
+                        {p.payment_link && (
+                            <div>
+                                <a
+                                    href={p.payment_link}
+                                    target="_blank"
+                                    className="border px-3 py-1.5 rounded text-sm flex items-center gap-2 hover:bg-gray-50"
+                                    onClick={(e) => e.stopPropagation()}
+                                >
+                                    <LinkIcon className="w-4 h-4 text-gray-600" />
+                                    Payment Link
+                                </a>
+                            </div>
+                        )}
+
+                        {/* FILE DOWNLOAD */}
+                        {p.file_url && (
+                            <div>
+                                <button
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                        window.open(p.file_url, "_blank");
+                                    }}
+                                    className="border px-3 py-1.5 rounded text-sm flex items-center gap-2 hover:bg-gray-50"
+                                >
+                                    <DownloadIcon className="w-4 h-4 text-gray-600" />
+                                    Download Receipt
+                                </button>
+                            </div>
+                        )}
+                    </div>
+                )}
+
+            />
+
+
+            {/* ------------------------- DOCUMENTS DRAWER ------------------------- */}
+            <CommonDrawer
+                open={drawerDocuments.open}
+                onClose={() => setDrawerDocuments({ open: false, id: null })}
+                apiUrl={
+                    drawerDocuments.id
+                        ? `/booking-documents/?booking=${drawerDocuments.id}&page_size=100`
+                        : null
+                }
+                heading="Documents"
+                noDataMsg="No documents uploaded"
+                noDataSubMsg="Upload related files such as reports or receipts"
+                renderItem={(doc: any) => (
+                    <div
+                        key={doc.id}
+                        className=""
+                    >
+                        {/* HEADER ROW */}
+                        <div className="flex items-start justify-between">
+                            <div className="font-semibold text-gray-900 text-base">
+                                {doc.name}
+                            </div>
+
+                            {/* Chip */}
+                            <span className="px-2 py-1 text-xs rounded-full border border-primary text-primary uppercase">
+                                {doc.doc_type?.replace(/_/g, " ") || "OTHER"}
+                            </span>
+                        </div>
+
+                        {/* DESCRIPTION */}
+                        {doc.description && (
+                            <div className="text-sm text-gray-600 mt-1">
+                                {doc.description}
+                            </div>
+                        )}
+
+                        {/* META INFO */}
+                        <div className="flex items-center gap-2 text-xs text-gray-500 mt-2">
+                            <span>Uploaded by {doc.uploaded_by_name || "Unknown"}</span>
+                            <span>•</span>
+                            <span>
+                                {new Date(doc.created_at).toLocaleString("en-IN", {
+                                    day: "2-digit",
+                                    month: "short",
+                                    year: "numeric",
+                                    hour: "2-digit",
+                                    minute: "2-digit",
+                                })}
+                            </span>
+                        </div>
+
+                        {/* DOWNLOAD BUTTON */}
+                        <div className="mt-3">
+                            <button
+                                onClick={() => window.open(doc.file_url, "_blank")}
+                                className="border px-3 py-1.5 rounded text-sm flex items-center gap-2 hover:bg-gray-50"
+                            >
+                                <DownloadIcon className="w-5 h-5 text-gray-600 hover:text-primary" />
+                                Download
+                            </button>
+                        </div>
+                    </div>
+                )}
+
+            />
+
+            {/* ------------------------- HISTORY DRAWER ------------------------- */}
+            <CommonDrawer
+                open={drawerHistory.open}
+                onClose={() => setDrawerHistory({ open: false, id: null })}
+                apiUrl={
+                    drawerHistory.id
+                        ? `/booking-actions/?booking=${drawerHistory.id}&page_size=100`
+                        : null
+                }
+                heading="Action History"
+                noDataMsg="No history"
+                noDataSubMsg="No actions logged for this booking"
+                renderItem={(h: any) => (
+                    <div >
+
+                        {/* ACTION BADGE */}
+                        <span
+                            className={`
+        inline-block px-2 py-0.5 rounded-full text-xs font-semibold
+        ${h.action === "create"
+                                    ? "bg-green-100 text-green-700"
+                                    : h.action === "update"
+                                        ? "bg-blue-100 text-blue-700"
+                                        : h.action === "cancel"
+                                            ? "bg-red-100 text-red-700"
+                                            : "bg-gray-100 text-gray-700"
+                                }
+      `}
+                        >
+                            {h.action.toUpperCase()}
+                        </span>
+
+                        {/* USER */}
+                        <div className="text-sm text-gray-900 font-medium">
+                            {h.user_str}
+                        </div>
+
+                        {/* NOTES */}
+                        {h.notes && (
+                            <div className="text-sm text-gray-600 whitespace-pre-line">
+                                {h.notes}
+                            </div>
+                        )}
+
+                        {/* TIMESTAMP */}
+                        <div className="text-xs text-gray-500">
+                            {new Date(h.created_at).toLocaleString("en-IN", {
+                                day: "2-digit",
+                                month: "short",
+                                year: "numeric",
+                                hour: "2-digit",
+                                minute: "2-digit",
+                            })}
+                        </div>
+                    </div>
+                )}
+
+            />
         </div>
     );
 };

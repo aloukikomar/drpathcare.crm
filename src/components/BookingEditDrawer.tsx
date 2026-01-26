@@ -136,10 +136,10 @@ export default function BookingEditDrawer({
             }
 
             // Update payment (cash)
-            else if (actionType === "update_payment" && paymentMethod === "cash") {
+            else if (actionType === "update_payment" && (paymentMethod === "cash" || paymentMethod === "upi")) {
                 const fd = new FormData();
                 fd.append("action_type", "update_payment");
-                fd.append("payment_method", "cash");
+                fd.append("payment_method", paymentMethod);
                 fd.append("remarks", remarks);
                 fd.append("payment_status", "success");
                 if (paymentProof) fd.append("file", paymentProof);
@@ -216,6 +216,11 @@ export default function BookingEditDrawer({
                 ];
             }
             else if (currentStatus == 'open') return [
+                { value: "update_status", label: "Update Status" },
+                { value: "update_agent", label: "Update Agent" },
+                { value: "add_remark", label: "Add Remark" },
+            ]
+            else if (currentStatus == 'rescheduled') return [
                 { value: "update_status", label: "Update Status" },
                 { value: "update_agent", label: "Update Agent" },
                 { value: "add_remark", label: "Add Remark" },

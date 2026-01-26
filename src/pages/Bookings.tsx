@@ -68,6 +68,10 @@ const BookingsPage: React.FC = () => {
       case "open":
         return "bg-blue-50";
 
+      // 1️⃣ Rescheduled
+      case "rescheduled":
+        return "bg-orange-50";
+
       // 2️⃣ Verified
       case "verified":
         return "bg-yellow-50";
@@ -212,6 +216,8 @@ const BookingsPage: React.FC = () => {
           switch (s) {
             case "open":
               return "bg-blue-100 text-blue-700 border-blue-200";
+            case "rescheduled":
+              return "bg-orange-100 text-orange-700 border-orange-200";
             case "verified":
               return "bg-yellow-100 text-yellow-700 border-yellow-200";
             case "root_manager":
@@ -442,6 +448,7 @@ const BookingsPage: React.FC = () => {
                   >
                     <option value="">All</option>
                     <option value="open">Open</option>
+                    <option value="rescheduled">Rescheduled</option>
                     <option value="verified">Verified</option>
                     <option value="root_manager">Root Manager</option>
                     <option value="phlebo">Phlebo</option>
