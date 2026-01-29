@@ -354,6 +354,17 @@ export default function BookingEditDrawer({
                     { value: "cancelled", label: "Cancelled" },
                 ]
             }
+            else if (currentStatus == 'rescheduled') {
+                if (parsed?.role?.name == 'Verifier') return [
+                    { value: "verified", label: "Verified" },
+                    { value: "cancelled", label: "Cancelled" },
+                ]
+
+                return [
+                    // { value: "verified", label: "Verified" },
+                    { value: "cancelled", label: "Cancelled" },
+                ]
+            }
             else if (currentStatus == 'verified') return [
                 { value: "open", label: "Open" },
                 // { value: "sample_collected", label: "Sample Collected" },

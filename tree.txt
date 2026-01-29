@@ -1,12 +1,4 @@
 ../drpathcare.crm
-├── public
-└── src
-    ├── api
-    ├── components
-    └── pages
-
-6 directories
-../drpathcare.crm
 ├── App.tsx
 ├── eslint.config.js
 ├── index.html
