@@ -8,6 +8,7 @@ import { Pencil, IndianRupee, FileText, History, DownloadIcon, RefreshCwIcon, Li
 import BookingEditDrawer from "../components/BookingEditDrawer";
 import { useNavigate } from "react-router-dom";
 import { customerApi } from "../api/axios";
+import {CommunicationDrawer} from "../components/drawer/CommunicationDrawer"
 
 
 const BookingsPage: React.FC = () => {
@@ -18,6 +19,8 @@ const BookingsPage: React.FC = () => {
   const [filterModalOpen, setFilterModalOpen] = useState(false);
   const [addModalOpen, setAddModalOpen] = useState(false);
   const [reloadKey, setReloadKey] = useState(0);
+  const [drawerData, setDrawerData] = useState({ open: false, id: '' });
+
 
   const navigate = useNavigate();
 
@@ -45,20 +48,21 @@ const BookingsPage: React.FC = () => {
 
   const handleOpenFilter = () => setFilterModalOpen(true);
   const handleOpenAdd = () => navigate("/bookings/create");
-  const handleMakeCall = async (booking_id) => {
-    try {
-      const res = await customerApi.post("/calls/connect/", {
-        "call_type": "booking",
-        "booking_id": booking_id
-      })
-      alert("Call initiated");
-    } catch (err: any) {
-      console.error(err);
-      alert("Failed to initiat call " + String(err.serverMessage));
-    } finally {
-      //setSaving(false);
-    }
-  }
+
+  // const handleMakeCall = async (booking_id) => {
+  //   try {
+  //     const res = await customerApi.post("/calls/connect/", {
+  //       "call_type": "booking",
+  //       "booking_id": booking_id
+  //     })
+  //     alert("Call initiated");
+  //   } catch (err: any) {
+  //     console.error(err);
+  //     alert("Failed to initiat call " + String(err.serverMessage));
+  //   } finally {
+  //     //setSaving(false);
+  //   }
+  // }
 
 
   const rowStatusBg = (status?: string | null) => {
@@ -333,7 +337,7 @@ const BookingsPage: React.FC = () => {
             disabled={!allowed_edit(row.status)}
             onClick={(e) => {
               e.stopPropagation();
-              handleMakeCall(row.id)
+              setDrawerData({ open: true, id: row.id })
             }}
           >
             <PhoneOutgoing className="w-5 h-5 text-gray-600 hover:text-primary " />
@@ -662,6 +666,12 @@ const BookingsPage: React.FC = () => {
 
       />
 
+      <CommunicationDrawer
+      isOpen={drawerData.open} 
+      bookingId={drawerData.id}
+      //tokens={tokens}
+      onClose={() => setDrawerData({ open: false, id: '' })}
+    />
 
       {/* ------------------------- DOCUMENTS DRAWER ------------------------- */}
       <CommonDrawer
