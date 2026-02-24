@@ -11,6 +11,7 @@ import {
   Phone,
   Mail,
   Users,
+  Trash2,
 } from "lucide-react";
 
 const ADMIN_ROLES = [1];
@@ -22,6 +23,7 @@ export default function Settings() {
   const [search, setSearch] = useState("");
   const [searchResults, setSearchResults] = useState<any[]>([]);
   const [saving, setSaving] = useState(false);
+  const [deactivating, setDeactivating] = useState(false);
   const [roles, setRoles] = useState<any[]>([]);
   const [loadingRoles, setLoadingRoles] = useState(false);
   const [mode, setMode] = useState<"edit" | "create">("edit");
@@ -40,6 +42,7 @@ export default function Settings() {
         const res = await customerApi.get(`/crm/users/${parsed.id}/`);
         setCurrentUser(res);
         setSelectedUser(res);
+        console.log(res)
       } catch (err) {
         console.error(err);
       }
@@ -106,6 +109,20 @@ export default function Settings() {
     })();
   }, [search, isAdmin]);
 
+  const handleDeactivate = async (userId) => {
+    setDeactivating(true);
+    if (!selectedUser) return;
+    try {
+      await customerApi.delete(`/crm/users/${selectedUser.id}/`);
+      alert("User deleted successfully");
+    } catch (err) {
+      console.error(err);
+      alert("Could not delete user");
+    } finally {
+      setDeactivating(false);
+    }
+  };
+
   const handleSave = async () => {
     if (!selectedUser) return;
 
@@ -164,7 +181,7 @@ export default function Settings() {
                       gender: "Male",
                       age: null,
                       role: "",
-                      mpin:"",
+                      mpin: "",
                       user_code: "",     // ✅ ADD
                       parent: null,      // ✅ ADD
                     });
@@ -422,7 +439,16 @@ export default function Settings() {
 
               {/* SAVE */}
               <div className="mt-6 flex justify-end">
-
+                {isAdmin && selectedUser?.role_name != 'Admin' &&
+                  <button
+                    onClick={handleDeactivate}
+                    disabled={deactivating}
+                    className="flex items-center gap-2 bg-red-500 text-white px-6 py-2 mr-2 rounded-lg"
+                  >
+                    <Trash2 className="w-4 h-4" />
+                    {deactivating ? "Deactivating..." : "Deactivate"}
+                  </button>
+                }
                 <button
                   onClick={handleSave}
                   disabled={saving}
