@@ -64,9 +64,13 @@ const BookingCreate: React.FC = () => {
     const goNext = () => setActiveTab((prev) => prev + 1);
     const goBack = () => setActiveTab((prev) => prev - 1);
 
+    //isLoading 
+    const [isLoading, setIsLoading] = useState(false)
+
 
     // -------------- create booking --------------
     const handleCreateBooking = async () => {
+        setIsLoading(true)
         try {
             const payload = {
                 user: customer.id,
@@ -92,11 +96,13 @@ const BookingCreate: React.FC = () => {
 
             const res = await customerApi.post("/bookings/", payload);
             if (res?.id) {
+                setIsLoading(false)
                 alert("Booking created!");
                 window.location.href = "/bookings";
             }
         } catch (err) {
             console.error(err);
+            setIsLoading(false)
             alert("Failed to create booking");
         }
     };
@@ -196,6 +202,7 @@ const BookingCreate: React.FC = () => {
                             finalAmount={finalAmount}
                             onBack={goBack}
                             onSubmit={handleCreateBooking}
+                            isLoading={isLoading}
                         />
 
                     )}

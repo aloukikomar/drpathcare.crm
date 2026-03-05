@@ -84,6 +84,9 @@ const BookingEdit: React.FC = () => {
     const [refreshKey, setRefreshKey] = useState(0)
     const [tabs, setTabs] = useState(ALL_TABS)
 
+    //isLoading 
+    const [isLoading, setIsLoading] = useState(false)
+
     // --- Drawer states ---
     const [drawerPayments, setDrawerPayments] = useState<{
         open: boolean;
@@ -458,6 +461,7 @@ const BookingEdit: React.FC = () => {
                                 onBack={goBack}
                                 originalBooking={originalBooking}
                                 onSubmit={() => setDrawerChanges(true)}
+                                isLoading={isLoading}
                             />
                         )}
                     </div>

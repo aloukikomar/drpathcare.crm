@@ -16,7 +16,7 @@ interface Props {
     items: ItemRow[];
     scheduledDate: string;
     scheduledSlot: string;
-
+    isLoading?: boolean;
     baseSum: number;
     offerSum: number;
     coreDiscount: number;
@@ -47,7 +47,7 @@ const ReviewSection: React.FC<Props> = ({
     couponDiscount,
     totalDiscount,
     finalAmount,
-
+    isLoading,
     onAdminDiscountChange,
     onBack,
     onSubmit,
@@ -69,6 +69,7 @@ const ReviewSection: React.FC<Props> = ({
     const maxAdminDiscount = Math.min(maxAmount, maxByPercentage);
 
     const [adminInput, setAdminInput] = useState<number>(adminDiscount || 0);
+    //const [isLoading, setIsLoading] = useState<boolean>(isLoading || false);
 
     const adminDisabled =
         adminInput <= 0 || adminInput > maxAdminDiscount;
@@ -333,6 +334,7 @@ const ReviewSection: React.FC<Props> = ({
 
                 <button
                     onClick={onSubmit}
+                    disabled={isLoading}
                     className="px-6 py-2 bg-green-600 text-white rounded shadow"
                 >
                     {mode === "create" ? "Create Booking" : "Update Booking"}

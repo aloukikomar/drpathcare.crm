@@ -42,11 +42,13 @@ export type DataTableProps<T = any> = {
   columns: Column<T>[];
   showSearch?: boolean;
   showFilter?: boolean;
+  showDownload?: boolean;
   showAdd?: boolean;
   extraParams?: Record<string, any>;
   pageSizeOptions?: number[];
   defaultPageSize?: number;
   onFilterClick?: () => void;
+  onDownloadClick?: () => void;
   onAddClick?: () => void;
   onRowClick?: (row: T) => void;
   onRefresh?: () => void;
@@ -71,11 +73,13 @@ export default function DataTable<T = any>({
   columns,
   showSearch = true,
   showFilter = true,
+  showDownload = false,
   showAdd = true,
   extraParams = {},
   pageSizeOptions = [10, 25, 50],
   defaultPageSize = 10,
   onFilterClick,
+  onDownloadClick,
   onAddClick,
   onRowClick,
   rowBgColor,   // ✅ NEW
@@ -250,6 +254,7 @@ export default function DataTable<T = any>({
   // UI helpers
   const showSearchBox = showSearch;
   const showFilterBtn = showFilter && typeof onFilterClick === "function";
+  const showDownloadBtn = showDownload && typeof onDownloadClick === "function";
   const showAddBtn = showAdd && typeof onAddClick === "function";
 
   // small helper to render cell value
@@ -406,6 +411,14 @@ export default function DataTable<T = any>({
 
             {/* ================= ACTION BUTTONS ================= */}
             <div className="flex gap-2 w-full sm:w-auto">
+              {showDownloadBtn && (
+                <button
+                  onClick={onDownloadClick}
+                  className="px-3 py-2 border rounded-md text-sm w-full sm:w-auto border-green-400"
+                >
+                  Download
+                </button>
+              )}
               {showFilterBtn && (
                 <button
                   onClick={onFilterClick}

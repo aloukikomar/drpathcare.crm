@@ -132,36 +132,33 @@ const Dashboard: React.FC = () => {
     );
 
     return (
-      <div className="mt-2 max-h-28 overflow-y-auto overflow-x-auto">
-        <div className="flex flex-wrap gap-3 justify-center px-2">
+      /* 1. Added 'w-full' to ensure it spans the card.
+         2. Added 'scrollbar-hide' (if using a plugin) or standard overflow rules.
+      */
+      <div className="mt-4 w-full overflow-x-auto pb-2 custom-scrollbar">
+        <div className="flex flex-nowrap items-center gap-6 px-2">
           {payload.map((entry: any, index: number) => {
             const count = entry.payload?.count || 0;
-            let percent = 0;
-          if (total > 0 && count > 0) {
-            percent = (count / total) * 100;
-          }
+            let percent = total > 0 ? (count / total) * 100 : 0;
 
-          const percentLabel =
-            percent > 0 && percent < 1
-              ? "<1%"
-              : `${percent.toFixed(1)}%`;
-
+            const percentLabel =
+              percent > 0 && percent < 1 ? "<1%" : `${percent.toFixed(1)}%`;
 
             return (
               <div
                 key={index}
                 className="flex items-center gap-2 text-xs shrink-0"
               >
-                {/* Color box */}
+                {/* Color Dot */}
                 <span
-                  className="inline-block w-3 h-3 rounded"
+                  className="inline-block w-2.5 h-2.5 rounded-full"
                   style={{ backgroundColor: entry.color }}
                 />
 
                 {/* Label + stats */}
-                <span className="whitespace-nowrap">
+                <span className="whitespace-nowrap font-medium text-gray-700">
                   {entry.value.replaceAll("_", " ").toUpperCase()}
-                  <span className="ml-1 text-gray-500 font-medium">
+                  <span className="ml-1 text-gray-400 font-normal">
                     ({count} • {percentLabel})
                   </span>
                 </span>

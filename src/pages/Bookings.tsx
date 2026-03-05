@@ -8,7 +8,7 @@ import { Pencil, IndianRupee, FileText, History, DownloadIcon, RefreshCwIcon, Li
 import BookingEditDrawer from "../components/BookingEditDrawer";
 import { useNavigate } from "react-router-dom";
 import { customerApi } from "../api/axios";
-import {CommunicationDrawer} from "../components/drawer/CommunicationDrawer"
+import { CommunicationDrawer } from "../components/drawer/CommunicationDrawer"
 
 
 const BookingsPage: React.FC = () => {
@@ -20,9 +20,33 @@ const BookingsPage: React.FC = () => {
   const [addModalOpen, setAddModalOpen] = useState(false);
   const [reloadKey, setReloadKey] = useState(0);
   const [drawerData, setDrawerData] = useState({ open: false, id: '' });
+  const [downloadModalOpen, setDownloadModalOpen] = useState(false);
+  const [downloadDates, setDownloadDates] = useState({ from: "", to: "" });
+  const [downloadDisable,setDownloadDisable]  = useState(false);
 
 
   const navigate = useNavigate();
+  const handleDownloadSubmit = async () => {
+    setDownloadDisable(true)
+    try {
+      // Construct params using existing active filters + selected download range
+      const params = new URLSearchParams({
+        ...filters, // Existing status/payment filters
+        date_from: downloadDates.from || "",
+        date_to: downloadDates.to || "",
+      });
+
+      await customerApi.get(`/bookings-list/export/?${params.toString()}`);
+
+      alert("Export request submitted! Please check your email in a few minutes.");
+      setDownloadModalOpen(false);
+      setDownloadDisable(false)
+    } catch (err: any) {
+      console.error(err);
+      alert("Failed to trigger export: " + (err.response?.data?.error || "Server error"));
+      setDownloadDisable(false)
+    }
+  };
 
   // --- Drawer states ---
   const [drawerPayments, setDrawerPayments] = useState<{
@@ -122,7 +146,16 @@ const BookingsPage: React.FC = () => {
     }
   };
 
-
+  const isAdmin = () => {
+    const user = localStorage.getItem('user')
+    if (user) {
+      const parsed = JSON.parse(user);
+      if (parsed?.role?.name == 'Admin') {
+        return true
+      }
+    }
+    return false
+  }
   const allowed_edit = (status) => {
     const user = localStorage.getItem('user')
 
@@ -416,6 +449,8 @@ const BookingsPage: React.FC = () => {
             scroll_y
             showSearch
             showFilter
+            showDownload={isAdmin()}
+            onDownloadClick={() => setDownloadModalOpen(true)}
             showAdd
             showDateRange
             onRowClick={(row) => {
@@ -667,11 +702,66 @@ const BookingsPage: React.FC = () => {
       />
 
       <CommunicationDrawer
-      isOpen={drawerData.open} 
-      bookingId={drawerData.id}
-      //tokens={tokens}
-      onClose={() => setDrawerData({ open: false, id: '' })}
-    />
+        isOpen={drawerData.open}
+        bookingId={drawerData.id}
+        //tokens={tokens}
+        onClose={() => setDrawerData({ open: false, id: '' })}
+      />
+      {/* --------------------- DOWNLOAD EXPORT MODAL --------------------- */}
+      {downloadModalOpen && (
+        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-[60]">
+          <div className="bg-white p-6 rounded-lg shadow-xl w-full max-w-sm">
+            <div className="flex items-center gap-2 mb-4 text-primary">
+              <DownloadIcon className="w-5 h-5" />
+              <h3 className="text-lg font-semibold">Export Bookings</h3>
+            </div>
+
+            <p className="text-xs text-gray-500 mb-4">
+              The report will be generated in the background and sent to your registered email.
+            </p>
+
+            <div className="space-y-4">
+              <div>
+                <label className="block text-xs font-medium text-gray-700 mb-1">From Date</label>
+                <input
+                  type="date"
+                  className="w-full border rounded px-3 py-2 text-sm"
+                  value={downloadDates.from}
+                  onChange={(e) => setDownloadDates(prev => ({ ...prev, from: e.target.value }))}
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-medium text-gray-700 mb-1">To Date</label>
+                <input
+                  type="date"
+                  className="w-full border rounded px-3 py-2 text-sm"
+                  value={downloadDates.to}
+                  onChange={(e) => setDownloadDates(prev => ({ ...prev, to: e.target.value }))}
+                />
+              </div>
+            </div>
+
+            <div className="flex flex-col gap-2 mt-6">
+              <button
+                disabled={downloadDisable}
+                onClick={handleDownloadSubmit}
+                className={`w-full text-white py-2 rounded font-medium hover:bg-primary/90 transition-colors ${downloadDisable ? "bg-gray-300" : "bg-primary"}` }
+              >
+                Generate Report
+              </button>
+              <button
+                onClick={() => {
+                  setDownloadDates({ from: "", to: "" });
+                  setDownloadModalOpen(false);
+                }}
+                className="w-full py-2 text-sm text-gray-600 hover:bg-gray-50 rounded"
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* ------------------------- DOCUMENTS DRAWER ------------------------- */}
       <CommonDrawer
