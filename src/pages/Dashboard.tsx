@@ -99,6 +99,7 @@ const Dashboard: React.FC = () => {
           params: {
             user: isAdmin ? null : u.id,
             limit: 6,
+            page_size:20
           },
         });
 
